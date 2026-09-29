@@ -1,19 +1,30 @@
 import mongoose from "mongoose";
 import { DB_NAME } from "../src/constants.js";
 
-// Connects Mongoose to the configured MongoDB database and stops the process if the connection fails.
+let connectionPromise;
+
+// Reuses the connection across warm serverless invocations.
 const connectDB = async () => {
-  try {
-    const connectionInstance = await mongoose.connect(
-      `${process.env.MONGODB_URI}/${DB_NAME}`
-    );
-    console.log(
-      `\n MongoDB connected !! DB HOST: ${connectionInstance.connection.host}`
-    );
-  } catch (error) {
-    console.log("MONGODB connection error", error);
-    process.exit(1);
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
   }
+
+  if (!connectionPromise) {
+    connectionPromise = mongoose
+      .connect(`${process.env.MONGODB_URI}/${DB_NAME}`)
+      .then((connectionInstance) => {
+        console.log(
+          `\n MongoDB connected !! DB HOST: ${connectionInstance.connection.host}`
+        );
+        return connectionInstance.connection;
+      })
+      .catch((error) => {
+        connectionPromise = undefined;
+        throw error;
+      });
+  }
+
+  return connectionPromise;
 };
 
 export default connectDB;

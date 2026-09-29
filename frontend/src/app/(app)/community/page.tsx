@@ -1236,7 +1236,7 @@ export default function CommunityPage() {
               About Community
             </h3>
             <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-              VideoTube Community is an open creator feed where you can broadcast text updates, gather feedback, and engage directly with fellow creators and subscribers.
+              Samaj Community is an open creator feed where you can broadcast text updates, gather feedback, and engage directly with fellow creators and subscribers.
             </p>
           </div>
 

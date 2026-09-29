@@ -1,7 +1,7 @@
 {
-  "name": "video-06",
+  "name": "samaj-backend",
   "version": "1.0.0",
-  "description": "A backend at CAC Channel -Youtube. ",
+  "description": "Samaj Backend API",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -11,7 +11,8 @@
   "keywords": [
     "javascript",
     "backend",
-    "chai"
+    "samaj",
+    "api"
   ],
   "author": "Ayush Bin",
   "license": "ISC",

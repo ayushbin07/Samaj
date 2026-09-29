@@ -98,7 +98,7 @@ export default function Sidebar() {
             style={{ fontFamily: "var(--font-display)" }}
           >
             <span className="text-[var(--color-accent)]">▶</span>
-            <span>VideoTube</span>
+            <span>Samaj</span>
           </Link>
         )}
         <button

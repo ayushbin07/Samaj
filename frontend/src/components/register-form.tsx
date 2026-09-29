@@ -240,7 +240,7 @@ export function RegisterForm({
             Create an account
           </CardTitle>
           <CardDescription className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
-            Join the creator community on VideoTube
+            Join the creator community on Samaj
           </CardDescription>
         </CardHeader>
 

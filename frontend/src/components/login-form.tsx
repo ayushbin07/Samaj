@@ -149,7 +149,7 @@ export function LoginForm({
             Welcome back
           </CardTitle>
           <CardDescription className="text-xs sm:text-sm text-[var(--color-text-secondary)]">
-            Sign in to your creator account on VideoTube
+            Sign in to your creator account on Samaj
           </CardDescription>
         </CardHeader>
 
@@ -380,7 +380,7 @@ export function LoginForm({
       </Card>
 
       <FieldDescription className="px-6 text-center text-xs text-[var(--color-text-tertiary)]">
-        By signing in, you agree to VideoTube&apos;s{" "}
+        By signing in, you agree to Samaj&apos;s{" "}
         <a
           href="#"
           className="underline hover:text-[var(--color-text-secondary)]"

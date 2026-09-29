@@ -1,6 +1,6 @@
-# VideoTube Fullstack Application
+# Samaj Fullstack Application
 
-A complete fullstack video sharing application with an Express/MongoDB backend and a Next.js (Turbopack) frontend.
+A complete fullstack community and media sharing application with an Express/MongoDB backend and a Next.js (Turbopack) frontend.
 
 ## Project Structure
 

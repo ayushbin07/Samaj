@@ -1,4 +1,4 @@
-# VideoTube Backend API
+# Samaj Backend API
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg" alt="Node.js" width="60" height="60" />
@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <strong>A production-grade, modular RESTful API backend for a video hosting and social media platform.</strong><br>
-  Built with Node.js, Express 5, MongoDB, Mongoose, and Cloudinary as part of the <em>Chai aur Code</em> backend engineering series.
+  <strong>A production-grade, modular RESTful API backend for a media and community platform.</strong><br>
+  Built with Node.js, Express 5, MongoDB, Mongoose, and Cloudinary.
 </p>
 
 <p align="center">
@@ -74,7 +74,7 @@
 ## 📁 Project Structure
 
 ```text
-Video-06/
+backend/
 ├── controllers/                  # Business logic & request handlers
 │   ├── subscription.controller.js # Subscription toggle, subscriber counts & lists
 │   ├── tweet.controller.js       # Tweet CRUD operations & paginated feed
@@ -124,7 +124,7 @@ Video-06/
 
 ```bash
 git clone <repository-url>
-cd Video-06
+cd backend
 npm install
 ```
 

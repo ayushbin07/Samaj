@@ -1,10 +1,10 @@
-# Video-06 — Project Context
+# Samaj Backend — Project Context
 
 ## What this project is
 
-This is an ES-module Node.js backend for a YouTube-style application, built as part of the *Chai aur Code* backend series. It currently concentrates on user accounts: registration, login, JWT authentication, profile maintenance, channel details, and watch history. MongoDB stores application data and Cloudinary stores uploaded images.
+This is an ES-module Node.js backend for the Samaj platform. It concentrates on user accounts, media hosting, community tweets, subscriptions, playlists, and engagement. MongoDB stores application data and Cloudinary stores uploaded images and media.
 
-The application name is `video-06`; the MongoDB database name is fixed to `videotube`.
+The backend application name is `samaj-backend`; the MongoDB database name connects to `videotube`.
 
 ## Technology and structure
 

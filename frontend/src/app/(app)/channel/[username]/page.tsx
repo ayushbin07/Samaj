@@ -338,7 +338,7 @@ export default function ChannelPage({
                     Upload your first video
                   </h3>
                   <p className="text-sm text-[var(--color-text-secondary)] max-w-md mx-auto mb-6">
-                    Share your creations with the VideoTube community and start building your audience today.
+                    Share your creations with the Samaj community and start building your audience today.
                   </p>
                   <Link href="/upload">
                     <Button color="primary" size="lg" radius="full" className="font-semibold shadow-md" startContent={<Upload size={16} />}>
@@ -363,7 +363,7 @@ export default function ChannelPage({
                 <div className="flex items-center gap-2">
                   <TrendingUp size={18} className="text-[var(--color-accent)]" />
                   <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
-                    Trending on VideoTube
+                    Trending on Samaj
                   </h3>
                 </div>
                 <VideoGrid videos={SAMPLE_VIDEOS.slice(0, 4)} />
@@ -542,7 +542,7 @@ export default function ChannelPage({
                 Description
               </h3>
               <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                Welcome to {channel.fullName}&apos;s official VideoTube channel. Stream content, discover new videos, and follow along for regular updates.
+                Welcome to {channel.fullName}&apos;s official Samaj channel. Stream content, discover new videos, and follow along for regular updates.
               </p>
             </div>
 

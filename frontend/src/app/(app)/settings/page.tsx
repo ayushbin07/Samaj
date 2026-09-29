@@ -941,7 +941,7 @@ export default function SettingsPage() {
             router.push("/login");
           }}
         >
-          Sign Out of VideoTube
+          Sign Out of Samaj
         </Button>
       </section>
     </div>

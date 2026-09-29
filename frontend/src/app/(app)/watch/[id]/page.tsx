@@ -42,7 +42,7 @@ export default function WatchPage({
       _id: id,
       title: "Featured Community Stream & Highlights",
       description:
-        "Welcome to VideoTube. Explore original content and engage with the creator community.",
+        "Welcome to Samaj. Explore original content and engage with the creator community.",
       thumbnail:
         "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
       videoFile:

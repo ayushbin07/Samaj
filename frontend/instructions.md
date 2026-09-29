@@ -1,20 +1,20 @@
-# VideoTube Frontend — Master Build Prompt
+# Samaj Frontend — Master Build Prompt
 
 ## 0. PROJECT CONTEXT
 
-You are building the **frontend only** for a VideoTube backend project.
+You are building the **frontend only** for a Samaj backend project.
 
 There are two directories/projects:
 
 ```text
-video-06/
-video-06(frontend)/
+backend/
+frontend/
 ```
 
 ### Backend
 
 ```text
-video-06/
+backend/
 ```
 
 This is the existing Node.js/Express/MongoDB backend.
@@ -22,7 +22,7 @@ This is the existing Node.js/Express/MongoDB backend.
 ### Frontend
 
 ```text
-video-06(frontend)/
+frontend/
 ```
 
 This is the project you are responsible for building.
@@ -33,7 +33,7 @@ This is the project you are responsible for building.
 
 This is the most important requirement.
 
-## `video-06/` is READ-ONLY.
+## `backend/` is READ-ONLY.
 
 You may inspect the backend to understand:
 
@@ -92,7 +92,7 @@ Instead:
 
 # 2. CURRENT BACKEND CAPABILITIES
 
-The backend is an evolving VideoTube API.
+The backend is an evolving Samaj API.
 
 Currently, the **Tweet/Twitter functionality is implemented and usable**.
 
@@ -903,7 +903,7 @@ Follow this order.
 
 Before writing significant frontend code:
 
-1. Inspect `video-06/`.
+1. Inspect `backend/`.
 2. Identify backend routes.
 3. Identify authentication flow.
 4. Identify request/response formats.
@@ -968,7 +968,7 @@ using actual backend APIs.
 
 Integrate the existing Tweet APIs.
 
-Make Tweets feel like part of the VideoTube ecosystem.
+Make Tweets feel like part of the Samaj ecosystem.
 
 ---
 
@@ -1134,12 +1134,12 @@ Before finishing any task, verify:
 
 Build the frontend aggressively and creatively, but respect the boundary:
 
-> **`video-06/` is sacred. Read it. Understand it. Never edit it.**
+> **`backend/` is sacred. Read it. Understand it. Never edit it directly from frontend tasks.**
 
 Everything else should happen inside:
 
 ```text
-video-06(frontend)/
+frontend/
 ```
 
 The backend already exists for a reason. The frontend's job is to make that API feel like a real product, not to rewrite the API because the frontend got impatient.

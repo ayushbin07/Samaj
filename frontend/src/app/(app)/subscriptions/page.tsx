@@ -328,7 +328,7 @@ export default function SubscriptionsPage() {
             <div className="flex items-center gap-2">
               <TrendingUp size={18} className="text-[var(--color-accent)]" />
               <h2 className="text-lg font-bold text-[var(--color-text-primary)]">
-                Trending on VideoTube
+                Trending on Samaj
               </h2>
             </div>
             <VideoGrid videos={SAMPLE_VIDEOS.slice(0, 4)} />

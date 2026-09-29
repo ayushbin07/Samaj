@@ -16,7 +16,7 @@ export default function LoginPage() {
           <div className="flex size-9 items-center justify-center rounded-2xl bg-[var(--color-accent)] text-black font-black shadow-md">
             ▶
           </div>
-          <span>VideoTube</span>
+          <span>Samaj</span>
         </Link>
         <Suspense
           fallback={

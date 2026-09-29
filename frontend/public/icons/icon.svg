@@ -1,0 +1,56 @@
+
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c1917" />
+      <stop offset="50%" stop-color="#0c0a09" />
+      <stop offset="100%" stop-color="#040303" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="35%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#78350f" stop-opacity="0.05" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+  <rect width="508" height="508" x="2" y="2" rx="110" fill="none" stroke="url(#ring)" stroke-width="4" />
+
+  <!-- Center Ambient Glow -->
+  <circle cx="256" cy="256" r="140" fill="#f59e0b" opacity="0.12" filter="url(#glow)" />
+
+  <!-- Connected Community Network Symbol -->
+  <!-- Connection Lines -->
+  <line x1="256" y1="160" x2="175" y2="310" stroke="url(#gold)" stroke-width="18" stroke-linecap="round" opacity="0.9" />
+  <line x1="256" y1="160" x2="337" y2="310" stroke="url(#gold)" stroke-width="18" stroke-linecap="round" opacity="0.9" />
+  <line x1="175" y1="310" x2="337" y2="310" stroke="url(#gold)" stroke-width="18" stroke-linecap="round" opacity="0.9" />
+
+  <!-- Inner Spark Connections -->
+  <line x1="256" y1="230" x2="256" y2="280" stroke="#fde047" stroke-width="12" stroke-linecap="round" />
+  <line x1="230" y1="255" x2="282" y2="255" stroke="#fde047" stroke-width="12" stroke-linecap="round" />
+
+  <!-- Nodes (Members / Communities) -->
+  <!-- Top Node -->
+  <circle cx="256" cy="160" r="48" fill="url(#gold)" filter="url(#glow)" />
+  <circle cx="256" cy="160" r="24" fill="#1c1917" />
+  <circle cx="256" cy="160" r="12" fill="#fde047" />
+
+  <!-- Bottom Left Node -->
+  <circle cx="175" cy="310" r="48" fill="url(#gold)" filter="url(#glow)" />
+  <circle cx="175" cy="310" r="24" fill="#1c1917" />
+  <circle cx="175" cy="310" r="12" fill="#fde047" />
+
+  <!-- Bottom Right Node -->
+  <circle cx="337" cy="310" r="48" fill="url(#gold)" filter="url(#glow)" />
+  <circle cx="337" cy="310" r="24" fill="#1c1917" />
+  <circle cx="337" cy="310" r="12" fill="#fde047" />
+</svg>

@@ -1,0 +1,64 @@
+import type { MetadataRoute } from "next";
+
+// Web App Manifest for Progressive Web App (PWA) installation
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "Community — Closed Social Network",
+    short_name: "Community",
+    description: "A private, invite-only community platform for creators, students, and engineers.",
+    start_url: "/",
+    id: "/",
+    scope: "/",
+    display: "standalone",
+    orientation: "portrait-primary",
+    background_color: "#09090b",
+    theme_color: "#09090b",
+    categories: ["social", "community", "productivity"],
+    icons: [
+      {
+        src: "/icons/icon-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-maskable-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/icons/icon-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-maskable-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
+    shortcuts: [
+      {
+        name: "Home",
+        url: "/",
+        description: "Open personalized dashboard",
+        icons: [{ src: "/icons/icon-192x192.png", sizes: "192x192" }],
+      },
+      {
+        name: "Communities",
+        url: "/community",
+        description: "Explore community posts and feed",
+        icons: [{ src: "/icons/icon-192x192.png", sizes: "192x192" }],
+      },
+      {
+        name: "Explore",
+        url: "/explore",
+        description: "Discover people and discussions",
+        icons: [{ src: "/icons/icon-192x192.png", sizes: "192x192" }],
+      },
+    ],
+  };
+}

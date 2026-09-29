@@ -923,7 +923,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <div className="sticky bottom-5 z-10 flex justify-end">
+      <div className="sticky bottom-24 z-10 flex justify-end md:bottom-5">
         <Button
           type="button"
           isLoading={profileLoading}

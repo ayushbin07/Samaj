@@ -44,7 +44,9 @@ app.use("/api/v1/communities", communityRouter);
 
 // Global Error Handler Middleware: returns JSON responses for all ApiErrors
 app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || (res.statusCode && res.statusCode !== 200 ? res.statusCode : 500);
+  const statusCode =
+    err.statusCode ||
+    (res.statusCode && res.statusCode !== 200 ? res.statusCode : 500);
   return res.status(statusCode).json({
     statusCode,
     success: false,
@@ -55,3 +57,4 @@ app.use((err, req, res, next) => {
 });
 
 export { app };
+export default app;

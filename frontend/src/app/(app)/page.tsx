@@ -156,18 +156,17 @@ export default function HomePage() {
   const recentActivities: ActivityItem[] = activityData?.data || [];
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-14">
+    <div className="w-full max-w-[1440px] mx-auto px-5 sm:px-6 lg:px-10 py-6 sm:py-12 space-y-10 sm:space-y-14">
       {/* 1. Welcome Section */}
       <section className="bezel-shell enter-stage">
-        <div className="bezel-core relative isolate overflow-hidden min-h-[190px] sm:min-h-[226px] p-7 sm:p-10 flex items-center justify-between">
-        <div className="absolute left-0 top-7 bottom-7 w-1 bg-[var(--color-accent)]" aria-hidden="true" />
-        <div className="relative z-10 space-y-2 max-w-xl pl-2 sm:pl-3">
+        <div className="bezel-core relative isolate overflow-hidden min-h-[216px] sm:min-h-[226px] p-6 sm:p-10 flex items-center justify-between bg-[radial-gradient(circle_at_100%_100%,var(--color-accent-soft),transparent_52%)] sm:bg-[var(--color-surface)]">
+        <div className="relative z-10 space-y-2 max-w-xl">
           <div className="inline-flex items-center gap-2 text-[var(--color-accent)] text-[11px] font-semibold uppercase tracking-[0.14em] mb-1">
             <Sparkles size={13} />
             <span>Your private network</span>
           </div>
           <h1
-            className="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] tracking-tight"
+            className="text-[2rem] sm:text-4xl font-bold text-[var(--color-text-primary)] tracking-tight"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {greeting}, {displayName}
@@ -179,7 +178,7 @@ export default function HomePage() {
 
         {/* User Blobatar placed in z-index: -1 on the right */}
         <div
-          className="absolute right-4 sm:right-10 md:right-16 top-1/2 -translate-y-1/2 pointer-events-none select-none flex items-center justify-center opacity-80 sm:opacity-95"
+          className="absolute right-1 sm:right-10 md:right-16 top-1/2 -translate-y-1/2 pointer-events-none select-none flex items-center justify-center opacity-45 sm:opacity-95"
           style={{ zIndex: 0 }}
           aria-hidden="true"
         >

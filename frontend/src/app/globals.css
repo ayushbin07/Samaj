@@ -260,6 +260,22 @@ p { text-wrap: pretty; }
   }
 }
 
+/* Phone-only composition: desktop proportions and components remain untouched. */
+@media (max-width: 767px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .bezel-shell {
+    border-radius: 1.5rem;
+    padding: 0.25rem;
+  }
+
+  .bezel-core {
+    border-radius: calc(1.5rem - 0.25rem);
+  }
+}
+
 /* Selection */
 ::selection {
   background: var(--color-accent-soft);

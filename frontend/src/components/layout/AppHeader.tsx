@@ -63,8 +63,13 @@ export function AppHeader() {
   const { parent, parentHref, current } = getBreadcrumbs()
 
   return (
-    <header className="sticky top-3 z-20 mx-3 mt-3 flex h-16 shrink-0 items-center justify-between gap-2 rounded-[1.35rem] bg-background/82 px-4 sm:mx-5 sm:px-6 lg:mx-7 lg:px-8 backdrop-blur-xl transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 shadow-[0_18px_45px_-38px_rgba(54,36,18,0.7)]">
-      <div className="flex items-center gap-2">
+    <header className="sticky top-2 z-20 mx-3 mt-2 flex h-14 shrink-0 items-center justify-between gap-2 rounded-[1.2rem] bg-background/82 px-3 sm:top-3 sm:mt-3 sm:h-16 sm:px-6 sm:mx-5 lg:mx-7 lg:px-8 backdrop-blur-xl transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 shadow-[0_18px_45px_-38px_rgba(54,36,18,0.7)]">
+      <Link href="/" className="sm:hidden min-w-0 leading-none">
+        <span className="block font-[var(--font-display)] text-xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">Samaj</span>
+        <span className="mt-1 block text-[9px] font-medium tracking-[0.08em] text-[var(--color-text-tertiary)]">PRIVATE NETWORK</span>
+      </Link>
+
+      <div className="hidden sm:flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
@@ -83,7 +88,7 @@ export function AppHeader() {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <form onSubmit={handleSearch} className="relative w-44 sm:w-64 md:w-80">
+        <form onSubmit={handleSearch} className="relative hidden w-44 sm:block sm:w-64 md:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <input
             value={searchQuery}
@@ -93,7 +98,7 @@ export function AppHeader() {
           />
         </form>
 
-        <ThemeToggle />
+        <ThemeToggle className="hidden sm:inline-flex" />
 
         {isInstallable && !isInstalled && (
           <button
@@ -112,7 +117,7 @@ export function AppHeader() {
           <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/community"
-              className="flex items-center justify-center size-9 rounded-lg bg-primary text-primary-foreground hover:opacity-85 active:scale-95 transition-all shrink-0"
+              className="hidden sm:flex items-center justify-center size-9 rounded-lg bg-primary text-primary-foreground hover:opacity-85 active:scale-95 transition-all shrink-0"
               title="Create a post"
             >
               <Plus className="size-4" />
@@ -130,7 +135,7 @@ export function AppHeader() {
             </Link>
           </div>
         ) : (
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
             <Link
               href="/login"
               className="h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold rounded-md border border-border hover:bg-muted text-foreground active:scale-95 transition-all"

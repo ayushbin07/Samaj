@@ -3,6 +3,7 @@ import { Outfit, Geist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { cn } from "@/lib/utils";
+import { Analytics } from "@vercel/analytics/next";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -19,7 +20,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  ),
   title: {
     default: "Community — Closed Social Network",
     template: "%s | Community",
@@ -38,19 +41,22 @@ export const metadata: Metadata = {
       { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      {
+        url: "/icons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
     ],
   },
   keywords: ["community", "social", "network", "discussions", "creators"],
   openGraph: {
     type: "website",
     title: "Community",
-    description: "A private, invite-only community platform for creators, students, and engineers.",
+    description:
+      "A private, invite-only community platform for creators, students, and engineers.",
     images: [{ url: "/icons/icon-512x512.png", width: 512, height: 512 }],
   },
 };
-
-
 
 export default function RootLayout({
   children,

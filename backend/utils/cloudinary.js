@@ -1,6 +1,5 @@
 import "dotenv/config";
 import { v2 as cloudinary } from "cloudinary";
-import { promises as fs } from "fs";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -8,29 +7,35 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Uploads a local file to Cloudinary and removes the temporary file afterward.
-const uploadOnCloudinary = async (localFilePath) => {
-  if (!localFilePath) return null;
+// Uploads an image Buffer directly to Cloudinary using upload_stream.
+// This is serverless-compatible — no local filesystem reads or writes.
+const uploadOnCloudinary = (fileBuffer, options = {}) => {
+  return new Promise((resolve, reject) => {
+    if (!fileBuffer) {
+      resolve(null);
+      return;
+    }
 
-  try {
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
-    });
-    console.log(
-      "file has been uploaded to Cloudinary successfully",
-      response.url
-    );
-    return response;
-  } catch (error) {
-    console.log("Error while uploading file", error);
-    return null;
-  } finally {
-    await fs.unlink(localFilePath).catch((unlinkError) => {
-      if (unlinkError.code !== "ENOENT") {
-        console.log("Error while removing temporary file", unlinkError);
+    const uploadOptions = {
+      resource_type: "image",
+      ...options,
+    };
+
+    const stream = cloudinary.uploader.upload_stream(
+      uploadOptions,
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary upload error:", error);
+          reject(error);
+        } else {
+          console.log("Image uploaded to Cloudinary:", result.secure_url);
+          resolve(result);
+        }
       }
-    });
-  }
+    );
+
+    stream.end(fileBuffer);
+  });
 };
 
 export { uploadOnCloudinary };

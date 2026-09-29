@@ -11,9 +11,6 @@ import {
   ArrowRight,
   Clock,
   UserPlus,
-  Check,
-  Compass,
-  Share2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { communitiesApi } from "@/lib/api/communities";
@@ -159,29 +156,31 @@ export default function HomePage() {
   const recentActivities: ActivityItem[] = activityData?.data || [];
 
   return (
-    <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-9">
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-14">
       {/* 1. Welcome Section */}
-      <section className="relative isolate overflow-hidden rounded-3xl bg-gradient-to-r from-[var(--color-surface-2)] via-[var(--color-surface)] to-[var(--color-surface-2)] border border-[var(--color-border)] p-6 sm:p-8 shadow-sm min-h-[140px] sm:min-h-[160px] flex items-center justify-between">
-        <div className="relative z-10 space-y-1.5 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-xs font-semibold tracking-wide border border-[var(--color-accent)]/20 mb-1">
+      <section className="bezel-shell enter-stage">
+        <div className="bezel-core relative isolate overflow-hidden min-h-[190px] sm:min-h-[226px] p-7 sm:p-10 flex items-center justify-between">
+        <div className="absolute left-0 top-7 bottom-7 w-1 bg-[var(--color-accent)]" aria-hidden="true" />
+        <div className="relative z-10 space-y-2 max-w-xl pl-2 sm:pl-3">
+          <div className="inline-flex items-center gap-2 text-[var(--color-accent)] text-[11px] font-semibold uppercase tracking-[0.14em] mb-1">
             <Sparkles size={13} />
-            <span>Invite-Only Network</span>
+            <span>Your private network</span>
           </div>
           <h1
-            className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight"
+            className="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] tracking-tight"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {greeting}, {displayName}
           </h1>
-          <p className="text-sm text-[var(--color-text-secondary)]">
+          <p className="text-sm leading-relaxed text-[var(--color-text-secondary)] max-w-md">
             Here&apos;s what&apos;s happening across your communities.
           </p>
         </div>
 
         {/* User Blobatar placed in z-index: -1 on the right */}
         <div
-          className="absolute right-4 sm:right-10 md:right-16 top-1/2 -translate-y-1/2 pointer-events-none select-none flex items-center justify-center opacity-85 sm:opacity-95"
-          style={{ zIndex: -1 }}
+          className="absolute right-4 sm:right-10 md:right-16 top-1/2 -translate-y-1/2 pointer-events-none select-none flex items-center justify-center opacity-80 sm:opacity-95"
+          style={{ zIndex: 0 }}
           aria-hidden="true"
         >
           <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 flex items-center justify-center">
@@ -200,11 +199,12 @@ export default function HomePage() {
             />
           </div>
         </div>
+        </div>
       </section>
 
 
       {/* 2. Your Communities Horizontal Cards */}
-      <section className="space-y-4">
+      <section className="enter-stage-delayed space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h2
@@ -214,7 +214,7 @@ export default function HomePage() {
               Your Communities
             </h2>
             {communities.length > 0 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text-tertiary)] font-medium">
+              <span className="text-xs px-2 py-0.5 rounded-md bg-[var(--color-surface-2)] text-[var(--color-text-tertiary)] font-medium">
                 {communities.length}
               </span>
             )}
@@ -233,27 +233,27 @@ export default function HomePage() {
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className="h-36 rounded-2xl bg-[var(--color-surface-2)]/60 animate-pulse border border-[var(--color-border)]"
+                className="h-36 rounded-xl bg-[var(--color-surface-2)]/60 animate-pulse"
               />
             ))}
           </div>
         ) : communities.length === 0 ? (
-          <div className="p-8 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] text-center">
+          <div className="p-8 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-center">
             <p className="text-xs text-[var(--color-text-tertiary)]">
               No communities found.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {communities.map((community) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
+            {communities.map((community, index) => (
               <div
                 key={community._id}
-                className="group relative p-4 rounded-2xl bg-[var(--color-surface)]/90 hover:bg-[var(--color-surface-hover)] border border-[var(--color-border)] hover:border-[var(--color-border-hover)] transition-all duration-200 flex flex-col justify-between shadow-xs"
+                className={`group relative p-1.5 rounded-[1.65rem] bg-[var(--color-surface-2)] transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1.5 hover:shadow-[0_22px_40px_-32px_rgba(43,28,14,0.78)] ${index === 0 ? "lg:col-span-4" : index === 1 || index === 2 ? "lg:col-span-3" : "lg:col-span-2"}`}
               >
-                <div>
+                <div className="rounded-[1.28rem] bg-[var(--color-surface)] p-4 h-full flex flex-col justify-between shadow-[inset_0_1px_0_rgba(255,255,255,0.13)]">
                   <div className="flex items-center justify-between gap-2 mb-2.5">
-                    <span className="text-2xl select-none">{community.icon || "💬"}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] font-medium border border-[var(--color-border)]">
+                    <MessageSquare size={19} className="text-[var(--color-accent)]" aria-label={community.icon ? `${community.icon} community` : "Community"} />
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] font-medium">
                       {community.category}
                     </span>
                   </div>
@@ -274,10 +274,10 @@ export default function HomePage() {
                     <button
                       onClick={() => joinMutation.mutate(community._id)}
                       disabled={joinMutation.isPending}
-                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                         community.isMember
                           ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20"
-                          : "bg-[var(--color-accent)]/15 text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-[#09090B] border border-[var(--color-accent)]/30"
+                          : "bg-[var(--color-accent)]/15 text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)] border border-[var(--color-accent)]/30"
                       }`}
                     >
                       {community.isMember ? "Joined" : "Join"}
@@ -285,7 +285,7 @@ export default function HomePage() {
                   ) : (
                     <Link
                       href="/login"
-                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-[var(--color-border)]"
+                      className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-[var(--color-border)]"
                     >
                       Join
                     </Link>
@@ -327,12 +327,12 @@ export default function HomePage() {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-20 rounded-2xl bg-[var(--color-surface-2)]/60 animate-pulse border border-[var(--color-border)]"
+                    className="h-20 rounded-xl bg-[var(--color-surface-2)]/60 animate-pulse"
                   />
                 ))}
               </div>
             ) : activeDiscussions.length === 0 ? (
-              <div className="p-8 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] text-center space-y-2">
+              <div className="p-8 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-center space-y-2">
                 <p className="text-sm font-semibold text-[var(--color-text-primary)]">
                   No discussions yet
                 </p>
@@ -355,7 +355,7 @@ export default function HomePage() {
                     <Link
                       key={discussion._id}
                       href={`/community`}
-                      className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border)] hover:border-[var(--color-border-hover)] transition-all shadow-xs"
+                      className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/45 transition-all"
                     >
                       <div className="flex items-start gap-3 min-w-0">
                         {author && (
@@ -378,7 +378,7 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0 px-3 py-1 rounded-full bg-[var(--color-surface-2)] border border-[var(--color-border)] text-xs font-medium text-[var(--color-text-secondary)]">
+                      <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0 px-3 py-1 rounded-md bg-[var(--color-surface-2)] text-xs font-medium text-[var(--color-text-secondary)]">
                         <MessageSquare size={13} className="text-[var(--color-accent)]" />
                         <span>
                           {replyCount} {replyCount === 1 ? "reply" : "replies"}
@@ -419,12 +419,12 @@ export default function HomePage() {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-28 rounded-2xl bg-[var(--color-surface-2)]/60 animate-pulse border border-[var(--color-border)]"
+                    className="h-28 rounded-xl bg-[var(--color-surface-2)]/60 animate-pulse"
                   />
                 ))}
               </div>
             ) : recommendedUsers.length === 0 ? (
-              <div className="p-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] text-center">
+              <div className="p-6 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-center">
                 <p className="text-xs text-[var(--color-text-tertiary)]">
                   You are all caught up! No new recommendations right now.
                 </p>
@@ -436,7 +436,7 @@ export default function HomePage() {
                   return (
                     <div
                       key={person._id}
-                      className="p-4 rounded-2xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border)] hover:border-[var(--color-border-hover)] transition-all flex flex-col justify-between gap-3 shadow-xs"
+                      className="p-4 rounded-xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/45 transition-all flex flex-col justify-between gap-3"
                     >
                       <div className="flex items-start gap-3">
                         <Link href={`/channel/${person.username}`} className="shrink-0">
@@ -465,7 +465,7 @@ export default function HomePage() {
                         <button
                           onClick={() => followMutation.mutate(person._id)}
                           disabled={followMutation.isPending}
-                          className="w-full inline-flex items-center justify-center gap-1.5 h-8 rounded-full bg-[var(--color-surface-2)] hover:bg-[var(--color-accent)] hover:text-[#09090B] border border-[var(--color-border)] text-xs font-semibold text-[var(--color-text-primary)] transition-all cursor-pointer"
+                          className="w-full inline-flex items-center justify-center gap-1.5 h-8 rounded-md bg-[var(--color-surface-2)] hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)] border border-[var(--color-border)] text-xs font-semibold text-[var(--color-text-primary)] transition-all cursor-pointer"
                         >
                           <UserPlus size={13} />
                           <span>Follow</span>
@@ -473,7 +473,7 @@ export default function HomePage() {
                       ) : (
                         <Link
                           href="/login"
-                          className="w-full inline-flex items-center justify-center gap-1.5 h-8 rounded-full bg-[var(--color-surface-2)] hover:bg-[var(--color-accent)] hover:text-[#09090B] border border-[var(--color-border)] text-xs font-semibold text-[var(--color-text-primary)] transition-all"
+                          className="w-full inline-flex items-center justify-center gap-1.5 h-8 rounded-md bg-[var(--color-surface-2)] hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)] border border-[var(--color-border)] text-xs font-semibold text-[var(--color-text-primary)] transition-all"
                         >
                           <span>Follow</span>
                         </Link>
@@ -489,7 +489,7 @@ export default function HomePage() {
         {/* Right Column: Recent Activity & Network Guidelines */}
         <div className="lg:col-span-4 space-y-6">
           {/* 5. Recent Activity Timeline */}
-          <div className="p-5 rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm space-y-4">
+          <div className="p-5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border)]">
               <div className="flex items-center gap-2">
                 <Clock size={16} className="text-[var(--color-accent)]" />
@@ -541,7 +541,7 @@ export default function HomePage() {
           </div>
 
           {/* Network Guidelines / Info */}
-          <div className="p-5 rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm space-y-3">
+          <div className="p-5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] space-y-3">
             <div className="flex items-center gap-2">
               <Users size={16} className="text-[var(--color-accent)]" />
               <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">

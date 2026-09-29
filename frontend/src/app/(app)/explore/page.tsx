@@ -55,13 +55,13 @@ function ExploreContent() {
   }, [searchTerm, activeCategory]);
 
   return (
-    <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 md:py-10">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-8 border-l-2 border-[var(--color-accent)] pl-4">
         <div className="flex items-center gap-2 mb-1">
           <Compass size={22} className="text-[var(--color-accent)]" />
           <h1
-            className="text-2xl font-bold text-[var(--color-text-primary)]"
+            className="text-3xl font-bold text-[var(--color-text-primary)]"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Explore
@@ -85,7 +85,7 @@ function ExploreContent() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Filter explore videos..."
-            className="w-full h-10 pl-11 pr-4 rounded-full bg-[var(--color-surface-2)] border border-[var(--color-border)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] outline-none transition-all"
+            className="w-full h-11 pl-11 pr-4 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] outline-none transition-all"
           />
         </div>
 
@@ -96,9 +96,9 @@ function ExploreContent() {
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={clsx(
-                "h-9 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 active:scale-[0.98]",
+                "h-9 px-4 rounded-md text-xs font-semibold whitespace-nowrap transition-all duration-150 active:scale-[0.98]",
                 activeCategory === cat
-                  ? "bg-[var(--color-accent)] text-[#09090B] shadow-sm font-semibold"
+                  ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm font-semibold"
                   : "bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-hover)]"
               )}
             >

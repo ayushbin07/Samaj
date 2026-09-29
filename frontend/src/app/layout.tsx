@@ -64,6 +64,12 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased font-sans">
+        <a
+          href="#main-content"
+          className="sr-only fixed left-4 top-4 z-[60] rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-accent-foreground)] focus:not-sr-only"
+        >
+          Skip to content
+        </a>
         <Providers>{children}</Providers>
       </body>
     </html>

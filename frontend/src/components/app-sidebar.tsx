@@ -9,12 +9,10 @@ import {
   Users,
   Library,
   MessageSquare,
-  Upload,
   Tv,
   Settings2,
   LifeBuoy,
   Send,
-  Play,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -115,7 +113,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[var(--color-accent)] text-[#09090B] font-black">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-black">
                   <Users className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">

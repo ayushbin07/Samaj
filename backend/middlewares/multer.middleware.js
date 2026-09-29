@@ -1,34 +1,35 @@
 import multer from "multer";
 
-const storage = multer.diskStorage({
-  // Chooses the temporary folder where uploaded files are stored before processing.
-  destination: function (req, res, cb) {
-    cb(null, "./public/temp");
+// Uses in-memory storage so no filesystem writes occur.
+// This makes the backend compatible with serverless environments (e.g. Vercel)
+// where the filesystem is read-only.
+const memoryStorage = multer.memoryStorage();
+
+// Image-only filter — rejects any non-image mimetype
+const imageOnly = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed (JPG, PNG, GIF, WebP, etc.)"));
+  }
+};
+
+// General image upload (avatar, cover image, thumbnails)
+const upload = multer({
+  storage: memoryStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB
   },
-  // Chooses the name that Multer gives to each uploaded file.
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
+  fileFilter: imageOnly,
 });
 
-const upload = multer({ storage });
-
+// Post/tweet image attachment upload
 const tweetMediaUpload = multer({
-  storage,
+  storage: memoryStorage,
   limits: {
-    fileSize: 50 * 1024 * 1024,
+    fileSize: 8 * 1024 * 1024, // 8 MB
   },
-  fileFilter: (req, file, cb) => {
-    if (
-      file.mimetype.startsWith("image/") ||
-      file.mimetype.startsWith("video/")
-    ) {
-      cb(null, true);
-      return;
-    }
-
-    cb(new Error("Only image and video files are allowed"));
-  },
+  fileFilter: imageOnly,
 });
 
 export { upload, tweetMediaUpload };

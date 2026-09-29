@@ -9,7 +9,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 // Creates a new tweet for the currently authenticated user.
 const createTweet = asyncHandler(async (req, res) => {
   const { content } = req.body;
-  const mediaPath = req.file?.path;
+  const mediaBuffer = req.file?.buffer;
 
   // Validate tweet content: ensure it exists, is a string, and is not only whitespace
   if (!content || typeof content !== "string" || content.trim() === "") {
@@ -23,16 +23,16 @@ const createTweet = asyncHandler(async (req, res) => {
   }
 
   let media;
-  if (mediaPath) {
-    const mediaFile = await uploadOnCloudinary(mediaPath);
+  if (mediaBuffer) {
+    const mediaFile = await uploadOnCloudinary(mediaBuffer);
 
     if (!mediaFile) {
-      throw new ApiError(400, "Tweet media could not be uploaded");
+      throw new ApiError(400, "Post image could not be uploaded");
     }
 
     media = {
       url: mediaFile.secure_url || mediaFile.url,
-      type: mediaFile.resource_type,
+      type: "image",
     };
   }
 

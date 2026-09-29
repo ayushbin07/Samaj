@@ -19,6 +19,7 @@ import {
   Palette,
   Smile,
   Sliders,
+  ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -59,6 +60,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState(user?.email ?? "");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [isPasswordFormOpen, setIsPasswordFormOpen] = useState(false);
 
   const [profileLoading, setProfileLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -241,27 +243,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveBlobatarConfig = async () => {
-    setSavingBlobatar(true);
-    setAvatarMsg(null);
-    try {
-      await authApi.updateBlobatarConfig(liveBlobatarOverrides);
-      await refreshUser();
-      setActiveAvatarType("blobatar");
-      setAvatarMsg({
-        type: "success",
-        text: "Blobatar appearance saved in database and set as your active avatar!",
-      });
-    } catch (err: unknown) {
-      setAvatarMsg({
-        type: "error",
-        text: getErrorMessage(err, "Failed to save Blobatar customization."),
-      });
-    } finally {
-      setSavingBlobatar(false);
-    }
-  };
-
   const handleResetBlobatarConfig = async () => {
     setSavingBlobatar(true);
     setAvatarMsg(null);
@@ -342,14 +323,14 @@ export default function SettingsPage() {
     }
   };
 
-  const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveSettings = async () => {
     setProfileMsg(null);
     setProfileLoading(true);
     try {
       await authApi.updateAccount({ fullName, email });
+      await authApi.updateBlobatarConfig(liveBlobatarOverrides);
       await refreshUser();
-      setProfileMsg({ type: "success", text: "Profile updated successfully." });
+      setProfileMsg({ type: "success", text: "Your account changes have been saved." });
     } catch (err: unknown) {
       setProfileMsg({
         type: "error",
@@ -383,13 +364,14 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 space-y-8">
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 md:py-12 space-y-10">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
+      <div className="bezel-shell enter-stage">
+        <div className="bezel-core px-7 py-8 sm:px-10 sm:py-10">
+        <div className="flex items-center gap-2 mb-2">
           <Settings size={22} className="text-[var(--color-accent)]" />
           <h1
-            className="text-2xl font-bold text-[var(--color-text-primary)]"
+            className="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)]"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Settings
@@ -398,10 +380,12 @@ export default function SettingsPage() {
         <p className="text-sm text-[var(--color-text-secondary)]">
           Manage your account profile, channel branding, and avatar preferences
         </p>
+        </div>
       </div>
 
       {/* Profile Avatar & Channel Branding Section */}
-      <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-6 md:p-8 shadow-md space-y-6">
+      <section className="bezel-shell enter-stage-delayed">
+        <div className="bezel-core p-6 md:p-8 space-y-7">
         <div>
           <h2 className="font-semibold text-[var(--color-text-primary)] text-lg mb-1 flex items-center gap-2">
             <Sparkles size={18} className="text-[var(--color-accent)]" />
@@ -592,16 +576,6 @@ export default function SettingsPage() {
                 startContent={<RotateCcw size={13} />}
               >
                 Reset to ID Defaults
-              </Button>
-              <Button
-                size="sm"
-                color="primary"
-                isLoading={savingBlobatar}
-                onPress={handleSaveBlobatarConfig}
-                className="rounded-full text-xs font-semibold px-4 shadow-sm"
-                startContent={<Check size={14} />}
-              >
-                Save Blobatar
               </Button>
             </div>
           </div>
@@ -808,10 +782,12 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       {/* Profile Information */}
-      <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-6 md:p-8 shadow-md">
+      <section className="bezel-shell">
+        <div className="bezel-core p-6 md:p-8">
         <div className="flex items-center gap-3 mb-2">
           <UserIcon size={18} className="text-[var(--color-accent)]" />
           <h2 className="font-semibold text-[var(--color-text-primary)] text-base">
@@ -822,7 +798,7 @@ export default function SettingsPage() {
           Update your public creator name and account email address.
         </p>
 
-        <form onSubmit={handleProfileUpdate} className="space-y-6">
+        <div className="space-y-6">
           {profileMsg && (
             <div
               className={`px-4 py-3 rounded-2xl text-sm border ${
@@ -851,32 +827,30 @@ export default function SettingsPage() {
               classNames={inputClassNames}
             />
           </div>
-          <div>
-            <Button
-              type="submit"
-              isLoading={profileLoading}
-              size="md"
-              color="primary"
-            >
-              Save Profile Changes
-            </Button>
-          </div>
-        </form>
+        </div>
+        </div>
       </section>
 
       {/* Change Password */}
-      <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-6 md:p-8 shadow-md">
-        <div className="flex items-center gap-3 mb-2">
-          <Lock size={18} className="text-[var(--color-accent)]" />
-          <h2 className="font-semibold text-[var(--color-text-primary)] text-base">
-            Change Password
-          </h2>
-        </div>
-        <p className="text-xs text-[var(--color-text-secondary)] mb-6">
-          Ensure your account stays secure by using a strong, unique password.
-        </p>
+      <section className="bezel-shell">
+        <div className="bezel-core p-2">
+        <button
+          type="button"
+          onClick={() => setIsPasswordFormOpen((isOpen) => !isOpen)}
+          className="group flex w-full items-center justify-between rounded-[1.6rem] px-5 py-5 text-left transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[var(--color-surface-2)] cursor-pointer"
+          aria-expanded={isPasswordFormOpen}
+        >
+          <span className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent)]"><Lock size={17} /></span>
+            <span>
+              <span className="block font-semibold text-[var(--color-text-primary)]">Change password</span>
+              <span className="mt-0.5 block text-xs text-[var(--color-text-secondary)]">Use a long, unique password to keep this account secure.</span>
+            </span>
+          </span>
+          <span className={cn("flex size-8 items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[var(--color-accent)] transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1", isPasswordFormOpen && "rotate-180")}><ChevronDown size={16} /></span>
+        </button>
 
-        <form onSubmit={handlePasswordChange} className="space-y-6">
+        {isPasswordFormOpen && <form onSubmit={handlePasswordChange} className="enter-stage mx-5 mb-5 space-y-5 rounded-[1.45rem] bg-[var(--color-surface-2)] p-5 sm:p-6">
           {passwordMsg && (
             <div
               className={`px-4 py-3 rounded-2xl text-sm border ${
@@ -906,7 +880,7 @@ export default function SettingsPage() {
               classNames={inputClassNames}
             />
           </div>
-          <div>
+          <div className="flex items-center gap-3">
             <Button
               type="submit"
               isLoading={passwordLoading}
@@ -915,12 +889,15 @@ export default function SettingsPage() {
             >
               Update Password
             </Button>
+            <button type="button" onClick={() => setIsPasswordFormOpen(false)} className="text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] cursor-pointer">Cancel</button>
           </div>
-        </form>
+        </form>}
+        </div>
       </section>
 
       {/* Account Session & Sign Out */}
-      <section className="p-6 md:p-8 rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm">
+      <section className="bezel-shell">
+        <div className="bezel-core p-6 md:p-8">
         <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">
           Account Session
         </h2>
@@ -943,7 +920,22 @@ export default function SettingsPage() {
         >
           Sign Out of Samaj
         </Button>
+        </div>
       </section>
+
+      <div className="sticky bottom-5 z-10 flex justify-end">
+        <Button
+          type="button"
+          isLoading={profileLoading}
+          onPress={handleSaveSettings}
+          color="primary"
+          size="lg"
+          className="group h-12 rounded-full px-3 pl-6 font-semibold shadow-[0_18px_38px_-24px_rgba(68,43,17,0.72)]"
+        >
+          <span>Save all changes</span>
+          <span className="ml-2 flex size-8 items-center justify-center rounded-full bg-black/10 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1 group-hover:-translate-y-px"><Check size={15} /></span>
+        </Button>
+      </div>
     </div>
   );
 }

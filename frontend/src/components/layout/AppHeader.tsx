@@ -63,7 +63,7 @@ export function AppHeader() {
   const { parent, parentHref, current } = getBreadcrumbs()
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border/40 bg-background/80 backdrop-blur-xl saturate-150 px-4 sm:px-6 lg:px-8 md:rounded-t-xl transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+    <header className="sticky top-3 z-20 mx-3 mt-3 flex h-16 shrink-0 items-center justify-between gap-2 rounded-[1.35rem] bg-background/82 px-4 sm:mx-5 sm:px-6 lg:mx-7 lg:px-8 backdrop-blur-xl transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 shadow-[0_18px_45px_-38px_rgba(54,36,18,0.7)]">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mr-2 h-4" />
@@ -89,7 +89,7 @@ export function AppHeader() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search people, posts, communities..."
-            className="h-9 w-full rounded-full bg-muted/40 border border-input pl-9 pr-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:bg-background transition-all"
+            className="h-9 w-full rounded-lg bg-muted/55 border border-input pl-9 pr-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/25 focus:border-ring focus:bg-background transition-all"
           />
         </form>
 
@@ -99,7 +99,7 @@ export function AppHeader() {
           <button
             type="button"
             onClick={installPwa}
-            className="h-8 px-3 rounded-full bg-[var(--color-accent)]/15 hover:bg-[var(--color-accent)] text-[var(--color-accent)] hover:text-[#09090B] border border-[var(--color-accent)]/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+            className="h-8 px-3 rounded-md bg-[var(--color-accent)]/15 hover:bg-[var(--color-accent)] text-[var(--color-accent)] hover:text-[var(--color-accent-foreground)] border border-[var(--color-accent)]/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shrink-0"
             title="Install Community App"
           >
             <Download size={13} className="stroke-[2.5]" />
@@ -112,7 +112,7 @@ export function AppHeader() {
           <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/community"
-              className="flex items-center justify-center size-9 rounded-full bg-primary text-primary-foreground hover:opacity-90 active:scale-95 transition-all shadow-sm shrink-0"
+              className="flex items-center justify-center size-9 rounded-lg bg-primary text-primary-foreground hover:opacity-85 active:scale-95 transition-all shrink-0"
               title="Create a post"
             >
               <Plus className="size-4" />
@@ -133,13 +133,13 @@ export function AppHeader() {
           <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/login"
-              className="h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold rounded-full border border-border hover:bg-muted text-foreground active:scale-95 transition-all"
+              className="h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold rounded-md border border-border hover:bg-muted text-foreground active:scale-95 transition-all"
             >
               Sign In
             </Link>
             <Link
               href="/register"
-              className="h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold rounded-full bg-primary text-primary-foreground hover:opacity-90 active:scale-95 transition-all shadow-sm"
+              className="h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:opacity-85 active:scale-95 transition-all"
             >
               Join
             </Link>

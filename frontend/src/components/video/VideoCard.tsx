@@ -54,11 +54,11 @@ export default function VideoCard({ video, layout = "grid" }: VideoCardProps) {
 
   if (layout === "horizontal") {
     return (
-      <div className="group flex gap-3.5 p-2 rounded-2xl hover:bg-[var(--color-surface-hover)] border border-transparent hover:border-white/[0.08] active:scale-[0.99] transition-all duration-200">
+      <div className="group flex gap-3.5 p-2 rounded-xl hover:bg-[var(--color-surface-hover)] border border-transparent hover:border-[var(--color-border)] active:scale-[0.99] transition-all duration-200">
         {/* Thumbnail with nested radius */}
         <Link
           href={`/watch/${video._id}`}
-          className="relative shrink-0 w-44 aspect-video rounded-xl overflow-hidden bg-[var(--color-surface-2)] border border-white/[0.06] block"
+          className="relative shrink-0 w-44 aspect-video rounded-lg overflow-hidden bg-[var(--color-surface-2)] border border-[var(--color-border)] block"
         >
           <img
             src={video.thumbnail}
@@ -66,7 +66,7 @@ export default function VideoCard({ video, layout = "grid" }: VideoCardProps) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
           />
           {video.duration > 0 && (
-            <span className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/75 text-white/95 tracking-wider backdrop-blur-md border border-white/10">
+            <span className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black/75 text-white/95 tracking-wider backdrop-blur-md border border-white/10">
               {formatDuration(video.duration)}
             </span>
           )}
@@ -97,11 +97,11 @@ export default function VideoCard({ video, layout = "grid" }: VideoCardProps) {
   }
 
   return (
-    <div className="group flex flex-col p-1.5 rounded-2xl bg-[var(--color-surface)]/90 border border-white/[0.08] hover:border-white/[0.18] hover:bg-[var(--color-surface-hover)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 active:scale-[0.985] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+    <article className="group flex flex-col p-1.5 rounded-[1.65rem] bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-hover)] transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1.5 hover:shadow-[0_24px_45px_-34px_rgba(43,28,14,0.72)] active:scale-[0.985]">
       {/* Thumbnail with nested radius */}
       <Link
         href={`/watch/${video._id}`}
-        className="relative aspect-video w-full rounded-xl overflow-hidden bg-[var(--color-surface-2)] block"
+        className="relative aspect-video w-full rounded-[1.3rem] overflow-hidden bg-[var(--color-surface-2)] block"
       >
         <img
           src={video.thumbnail}
@@ -111,19 +111,19 @@ export default function VideoCard({ video, layout = "grid" }: VideoCardProps) {
         />
         {/* Play hover badge */}
         <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-          <div className="w-11 h-11 rounded-full bg-[var(--color-accent)] text-[#09090B] flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform duration-200">
-            <Play size={18} className="fill-[#09090B] text-[#09090B] translate-x-0.5" />
+          <div className="w-11 h-11 rounded-full bg-[var(--color-accent)] text-[var(--color-accent-foreground)] flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform duration-200">
+            <Play size={18} className="fill-[var(--color-accent-foreground)] text-[var(--color-accent-foreground)] translate-x-0.5" />
           </div>
         </div>
         {video.duration > 0 && (
-          <span className="absolute bottom-2 right-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-black/75 text-white/95 tracking-wider backdrop-blur-md border border-white/10">
+          <span className="absolute bottom-2 right-2 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-black/75 text-white/95 tracking-wider backdrop-blur-md border border-white/10">
             {formatDuration(video.duration)}
           </span>
         )}
       </Link>
 
       {/* Meta */}
-      <div className="p-3.5 flex gap-3">
+      <div className="m-0.5 rounded-[1.25rem] bg-[var(--color-surface)] p-3.5 flex gap-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
         <Link
           href={`/channel/${owner.username}`}
           className="shrink-0 w-9 h-9 block rounded-full overflow-hidden mt-0.5 hover:opacity-85 active:scale-95 transition-all"
@@ -152,6 +152,6 @@ export default function VideoCard({ video, layout = "grid" }: VideoCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

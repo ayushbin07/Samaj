@@ -2,6 +2,7 @@
 
 import { Suspense } from "react"
 import Link from "next/link"
+import { Play } from "lucide-react"
 import { LoginForm } from "@/components/login-form"
 
 export default function LoginPage() {
@@ -13,8 +14,8 @@ export default function LoginPage() {
           className="flex items-center gap-2 self-center font-bold text-xl text-[var(--color-text-primary)] hover:opacity-90 transition-opacity"
           style={{ fontFamily: "var(--font-display)" }}
         >
-          <div className="flex size-9 items-center justify-center rounded-2xl bg-[var(--color-accent)] text-black font-black shadow-md">
-            ▶
+          <div className="flex size-9 items-center justify-center rounded-lg bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm">
+            <Play className="size-4 fill-current" aria-hidden="true" />
           </div>
           <span>Samaj</span>
         </Link>

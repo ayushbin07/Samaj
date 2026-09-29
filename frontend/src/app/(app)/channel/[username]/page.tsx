@@ -136,9 +136,10 @@ export default function ChannelPage({
   }
 
   return (
-    <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-10">
       {/* 1. Cinematic Panoramic Cover Banner */}
-      <div className="relative w-full h-52 sm:h-64 md:h-80 lg:h-96 rounded-3xl overflow-hidden border border-[var(--color-border)] shadow-2xl bg-zinc-950">
+      <div className="bezel-shell enter-stage">
+      <div className="relative w-full h-52 sm:h-64 md:h-80 lg:h-96 rounded-[calc(2rem-0.375rem)] overflow-hidden bg-zinc-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
         {channel.coverImage ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
@@ -158,9 +159,10 @@ export default function ChannelPage({
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-black/30 pointer-events-none" />
       </div>
+      </div>
 
       {/* 2. Rich Creator Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 -mt-16 sm:-mt-20 md:-mt-24 px-4 sm:px-6 relative z-10">
+      <div className="enter-stage-delayed flex flex-col lg:flex-row items-start lg:items-end justify-between gap-7 -mt-16 sm:-mt-20 md:-mt-24 px-4 sm:px-8 relative z-10">
         <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
           <div className="relative">
             <UserAvatar
@@ -173,7 +175,7 @@ export default function ChannelPage({
           <div className="space-y-1.5 pt-1">
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1
-                className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--color-text-primary)] tracking-tight"
+                className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--color-text-primary)] tracking-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {channel.fullName}
@@ -268,12 +270,12 @@ export default function ChannelPage({
       </div>
 
       {/* 3. Interactive Channel Navigation Tabs */}
-      <div className="border-b border-[var(--color-border)] flex items-center gap-2 overflow-x-auto scrollbar-none pb-2">
+      <div className="bezel-shell flex items-center gap-1 overflow-x-auto scrollbar-none p-1.5">
         <button
           onClick={() => setActiveTab("videos")}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
             activeTab === "videos"
-              ? "bg-[var(--color-accent)] text-[#09090B] shadow-sm font-bold"
+              ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm font-bold"
               : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
           }`}
         >
@@ -283,9 +285,9 @@ export default function ChannelPage({
 
         <button
           onClick={() => setActiveTab("community")}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
             activeTab === "community"
-              ? "bg-[var(--color-accent)] text-[#09090B] shadow-sm font-bold"
+              ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm font-bold"
               : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
           }`}
         >
@@ -298,9 +300,9 @@ export default function ChannelPage({
 
         <button
           onClick={() => setActiveTab("about")}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
             activeTab === "about"
-              ? "bg-[var(--color-accent)] text-[#09090B] shadow-sm font-bold"
+              ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm font-bold"
               : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
           }`}
         >

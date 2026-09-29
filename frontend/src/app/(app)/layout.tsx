@@ -16,9 +16,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <SidebarInset>
         <AppHeader />
-        <div className="flex flex-1 flex-col w-full pb-16 md:pb-6">
+        <main id="main-content" className="flex flex-1 flex-col w-full pb-16 md:pb-6">
           {children}
-        </div>
+        </main>
       </SidebarInset>
       <MobileNav />
     </SidebarProvider>

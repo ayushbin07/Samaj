@@ -25,14 +25,14 @@ export default function VideoGrid({
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="flex flex-col p-1.5 rounded-2xl overflow-hidden bg-[var(--color-surface)]/80 border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]"
+            className="flex flex-col p-1.5 rounded-xl overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)]"
           >
-            <Skeleton className="w-full aspect-video rounded-xl bg-white/[0.05]" />
+            <Skeleton className="w-full aspect-video rounded-lg bg-[var(--color-surface-2)]" />
             <div className="p-3.5 flex gap-3">
-              <Skeleton className="w-9 h-9 rounded-full shrink-0 bg-white/[0.05]" />
+              <Skeleton className="w-9 h-9 rounded-full shrink-0 bg-[var(--color-surface-2)]" />
               <div className="space-y-2 flex-1 mt-0.5">
-                <Skeleton className="w-full h-3.5 rounded-full bg-white/[0.05]" />
-                <Skeleton className="w-2/3 h-3 rounded-full bg-white/[0.05]" />
+                <Skeleton className="w-full h-3.5 rounded-full bg-[var(--color-surface-2)]" />
+                <Skeleton className="w-2/3 h-3 rounded-full bg-[var(--color-surface-2)]" />
               </div>
             </div>
           </div>
@@ -43,7 +43,7 @@ export default function VideoGrid({
 
   if (videos.length === 0) {
     return (
-      <div className="rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+      <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
         <EmptyState
           title={emptyTitle}
           description={emptyDescription}

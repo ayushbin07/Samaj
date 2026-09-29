@@ -60,11 +60,11 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // Check for images, check for avatar
-  const avatarLocalPath = req.files?.avatar?.[0]?.path;
+  const avatarBuffer = req.files?.avatar?.[0]?.buffer;
   let avatarUrl = "";
 
-  if (avatarLocalPath) {
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
+  if (avatarBuffer) {
+    const avatar = await uploadOnCloudinary(avatarBuffer);
     if (avatar?.url) {
       avatarUrl = avatar.url;
     }
@@ -108,16 +108,16 @@ const registerUser = asyncHandler(async (req, res) => {
     avatarType = "blobatar";
   }
 
-  let coverImageLocalPath;
+  let coverImageBuffer;
   if (
     req.files &&
     Array.isArray(req.files.coverImage) &&
     req.files.coverImage.length > 0
   ) {
-    coverImageLocalPath = req.files.coverImage[0].path;
+    coverImageBuffer = req.files.coverImage[0].buffer;
   }
 
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  const coverImage = await uploadOnCloudinary(coverImageBuffer);
 
   // create a user object - create entry in db
   const user = await User.create({
@@ -338,12 +338,12 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 // Uploads a new avatar or switches active avatarType between "blobatar" and "upload".
 const updateUserAvatar = asyncHandler(async (req, res) => {
-  const avatarLocalPath = req.file?.path;
+  const avatarBuffer = req.file?.buffer;
   const requestedAvatarType = req.body?.avatarType;
 
   // Case 1: Image file is uploaded
-  if (avatarLocalPath) {
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
+  if (avatarBuffer) {
+    const avatar = await uploadOnCloudinary(avatarBuffer);
 
     if (!avatar?.url) {
       throw new ApiError(400, "Error while uploading avatar");
@@ -487,13 +487,13 @@ const updateBlobatarConfig = asyncHandler(async (req, res) => {
 // Uploads a new cover image and saves its Cloudinary URL for the authenticated user.
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
-  const coverImageLocalPath = req.file?.path;
+  const coverImageBuffer = req.file?.buffer;
 
-  if (!coverImageLocalPath) {
+  if (!coverImageBuffer) {
     throw new ApiError(400, "Cover Image is missing");
   }
 
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  const coverImage = await uploadOnCloudinary(coverImageBuffer);
 
   if (!coverImage.url) {
     throw new ApiError(400, "Error while uploading on cover image");

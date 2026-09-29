@@ -8,7 +8,7 @@
 
 **Project:** Samaj
 **Generated:** 2026-09-29 01:28:55
-**Category:** Video Streaming/OTT
+**Category:** Community & Media Sharing
 
 ---
 

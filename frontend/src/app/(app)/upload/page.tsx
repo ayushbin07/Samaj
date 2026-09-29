@@ -2,33 +2,30 @@
 
 import { useState, useRef } from "react";
 import { Input, Button, TextArea } from "@/components/ui";
-import { Upload, Video, Image as ImageIcon, CheckCircle } from "lucide-react";
-import { videosApi } from "@/lib/api/videos";
+import { Upload, Image as ImageIcon, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
-import { getErrorMessage } from "@/lib/api/client";
+import { getErrorMessage, apiClient } from "@/lib/api/client";
 
 export default function UploadPage() {
   const { isAuthenticated } = useAuth();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const videoInputRef = useRef<HTMLInputElement>(null);
-  const thumbInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const handleThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setThumbnailFile(file);
+    setImageFile(file);
     const reader = new FileReader();
-    reader.onload = (ev) => setThumbnailPreview(ev.target?.result as string);
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -36,25 +33,27 @@ export default function UploadPage() {
     e.preventDefault();
     setError(null);
 
-    if (!videoFile || !thumbnailFile || !title.trim() || !description.trim()) {
-      setError("Please fill in all fields and select both video and thumbnail files.");
+    if (!title.trim() || !description.trim()) {
+      setError("Please fill in both title and description.");
       return;
     }
 
     const formData = new FormData();
-    formData.append("title", title.trim());
-    formData.append("desc", description.trim());
-    formData.append("description", description.trim());
-    formData.append("video", videoFile);
-    formData.append("thumbnail", thumbnailFile);
-    formData.append("duration", "0");
+    // Build the content string from title + description
+    const content = `**${title.trim()}**\n\n${description.trim()}`;
+    formData.append("content", content);
+    if (imageFile) {
+      formData.append("media", imageFile);
+    }
 
     setIsLoading(true);
     try {
-      await videosApi.publishVideo(formData);
+      await apiClient.post("/tweets/create-tweet", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setSuccess(true);
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Upload failed. Please try again."));
+      setError(getErrorMessage(err, "Post failed. Please try again."));
     } finally {
       setIsLoading(false);
     }
@@ -68,10 +67,10 @@ export default function UploadPage() {
             <Upload size={30} className="text-[var(--color-accent)]" />
           </div>
           <h1 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
-            Sign in to upload
+            Sign in to post
           </h1>
           <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-            You need to be logged in to upload videos.
+            You need to be logged in to share posts.
           </p>
           <Link href="/login">
             <Button color="primary" size="md">
@@ -91,10 +90,10 @@ export default function UploadPage() {
             <CheckCircle size={36} className="text-emerald-400" />
           </div>
           <h1 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
-            Video uploaded!
+            Post published!
           </h1>
           <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-            Your video has been published successfully.
+            Your post has been shared with the community successfully.
           </p>
           <div className="flex gap-3 justify-center">
             <Button
@@ -103,16 +102,15 @@ export default function UploadPage() {
                 setSuccess(false);
                 setTitle("");
                 setDescription("");
-                setVideoFile(null);
-                setThumbnailFile(null);
-                setThumbnailPreview(null);
+                setImageFile(null);
+                setImagePreview(null);
               }}
             >
-              Upload Another
+              Post Another
             </Button>
-            <Link href="/">
+            <Link href="/community">
               <Button color="primary">
-                Go Home
+                View Community
               </Button>
             </Link>
           </div>
@@ -130,11 +128,11 @@ export default function UploadPage() {
             className="text-2xl font-bold text-[var(--color-text-primary)]"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Upload Video
+            Create Post
           </h1>
         </div>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          Publish your video to your channel and share your content with the world
+          Share your thoughts and images with the Samaj community
         </p>
       </div>
 
@@ -151,17 +149,17 @@ export default function UploadPage() {
             <div className="lg:col-span-7 space-y-6">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">
-                  Video Details
+                  Post Details
                 </h3>
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  Add a title and description to help viewers discover your video.
+                  Give your post a title and description to help the community understand it.
                 </p>
               </div>
 
               <Input
                 id="upload-title"
                 label="Title"
-                placeholder="Enter a descriptive title"
+                placeholder="Enter a title for your post"
                 value={title}
                 onValueChange={setTitle}
                 classNames={inputClassNames}
@@ -171,7 +169,7 @@ export default function UploadPage() {
               <TextArea
                 id="upload-description"
                 label="Description"
-                placeholder="Describe your video, add timestamps, tags, or links..."
+                placeholder="What's on your mind? Add context, links, or details..."
                 value={description}
                 onValueChange={setDescription}
                 minRows={6}
@@ -186,75 +184,34 @@ export default function UploadPage() {
               />
 
               <div className="p-4 rounded-2xl bg-[var(--color-surface-2)]/60 border border-[var(--color-border)] space-y-1.5">
-                <p className="text-xs font-semibold text-[var(--color-text-primary)]">Publishing Guidelines</p>
+                <p className="text-xs font-semibold text-[var(--color-text-primary)]">Community Guidelines</p>
                 <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                  Make sure your content complies with our Community Guidelines and does not infringe copyright. Your video will be visible globally once published.
+                  Keep posts respectful and relevant. Do not share copyrighted material or spam. Posts are visible to all community members.
                 </p>
               </div>
             </div>
 
-            {/* Right Column: Files & Submit */}
+            {/* Right Column: Image & Submit */}
             <div className="lg:col-span-5 space-y-6">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-1">
-                  Media Files
+                  Attach Image
                 </h3>
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  Select your video master file and custom artwork.
+                  Optional — attach one image to your post (JPG, PNG, GIF, WebP up to 8 MB).
                 </p>
               </div>
 
-              {/* Video file */}
+              {/* Image file */}
               <div>
-                <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-2">
-                  Video File *
-                </label>
                 <div
-                  onClick={() => videoInputRef.current?.click()}
-                  className="cursor-pointer border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-accent)] bg-[var(--color-surface-2)]/60 rounded-2xl p-6 text-center transition-all duration-200 group"
-                >
-                  <div className="w-12 h-12 rounded-full bg-[var(--color-surface)] flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform">
-                    <Video
-                      size={24}
-                      className="text-[var(--color-accent)]"
-                    />
-                  </div>
-                  <p className="text-sm font-medium text-[var(--color-text-secondary)]">
-                    {videoFile ? videoFile.name : "Click to select video file"}
-                  </p>
-                  {videoFile ? (
-                    <p className="text-xs text-[var(--color-accent)] mt-1 font-semibold">
-                      {(videoFile.size / 1024 / 1024).toFixed(1)} MB
-                    </p>
-                  ) : (
-                    <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-                      MP4, WebM, or MOV up to 500MB
-                    </p>
-                  )}
-                </div>
-                <input
-                  ref={videoInputRef}
-                  id="upload-video"
-                  type="file"
-                  accept="video/*"
-                  onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
-                  className="hidden"
-                />
-              </div>
-
-              {/* Thumbnail */}
-              <div>
-                <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-2">
-                  Thumbnail *
-                </label>
-                <div
-                  onClick={() => thumbInputRef.current?.click()}
+                  onClick={() => imageInputRef.current?.click()}
                   className="cursor-pointer border-2 border-dashed border-[var(--color-border)] hover:border-[var(--color-accent)] bg-[var(--color-surface-2)]/60 rounded-2xl overflow-hidden transition-all duration-200 group"
                 >
-                  {thumbnailPreview ? (
+                  {imagePreview ? (
                     <img
-                      src={thumbnailPreview}
-                      alt="Thumbnail preview"
+                      src={imagePreview}
+                      alt="Selected image preview"
                       className="w-full h-44 object-cover"
                     />
                   ) : (
@@ -266,22 +223,37 @@ export default function UploadPage() {
                         />
                       </div>
                       <p className="text-sm font-medium text-[var(--color-text-secondary)]">
-                        Click to select thumbnail
+                        {imageFile ? imageFile.name : "Click to select an image"}
                       </p>
-                      <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-                        16:9 ratio recommended (JPG, PNG)
-                      </p>
+                      {imageFile ? (
+                        <p className="text-xs text-[var(--color-accent)] mt-1 font-semibold">
+                          {(imageFile.size / 1024 / 1024).toFixed(1)} MB
+                        </p>
+                      ) : (
+                        <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                          JPG, PNG, GIF, WebP · max 8 MB
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
                 <input
-                  ref={thumbInputRef}
-                  id="upload-thumbnail"
+                  ref={imageInputRef}
+                  id="upload-image"
                   type="file"
                   accept="image/*"
-                  onChange={handleThumbnail}
+                  onChange={handleImage}
                   className="hidden"
                 />
+                {imageFile && (
+                  <button
+                    type="button"
+                    onClick={() => { setImageFile(null); setImagePreview(null); }}
+                    className="mt-2 text-xs text-[var(--color-text-tertiary)] hover:text-red-400 transition-colors"
+                  >
+                    Remove image
+                  </button>
+                )}
               </div>
 
               <div className="pt-2">
@@ -293,7 +265,7 @@ export default function UploadPage() {
                   className="w-full font-semibold shadow-md"
                   startContent={!isLoading && <Upload size={16} />}
                 >
-                  {isLoading ? "Uploading..." : "Publish Video"}
+                  {isLoading ? "Publishing..." : "Publish Post"}
                 </Button>
               </div>
             </div>

@@ -78,6 +78,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <Providers>{children}</Providers>
+        <SpeedInsights />
       </body>
     </html>
   );

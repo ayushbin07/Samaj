@@ -77,6 +77,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );

@@ -5,7 +5,6 @@ import MobileNav from "@/components/layout/MobileNav";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 export const metadata: Metadata = {
-  title: "Community",
   description: "Personalized dashboard, discovery, and social feed for your private network.",
 };
 

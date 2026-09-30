@@ -25,16 +25,16 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   ),
   title: {
-    default: "Community — Closed Social Network",
-    template: "%s | Community",
+    default: "Samaj | Community & blog",
+    template: "%s | Samaj",
   },
   description:
-    "A private, invite-only community platform for creators, students, and engineers. Connect, discuss, and build together.",
+    "A private, invite-only community and blog platform for creators, students, and engineers. Connect, discuss, and build together.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Community",
+    title: "Samaj",
   },
   icons: {
     icon: [
@@ -49,12 +49,12 @@ export const metadata: Metadata = {
       },
     ],
   },
-  keywords: ["community", "social", "network", "discussions", "creators"],
+  keywords: ["community", "blog", "social", "network", "discussions", "creators"],
   openGraph: {
     type: "website",
-    title: "Community",
+    title: "Samaj | Community & blog",
     description:
-      "A private, invite-only community platform for creators, students, and engineers.",
+      "A private, invite-only community and blog platform for creators, students, and engineers.",
     images: [{ url: "/icons/icon-512x512.png", width: 512, height: 512 }],
   },
 };

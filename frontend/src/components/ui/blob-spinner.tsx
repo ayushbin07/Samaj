@@ -11,28 +11,23 @@ export interface BlobSpinnerProps {
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   label?: string;
-  showDots?: boolean;
 }
 
 const SIZES = {
   sm: {
     container: "w-7 h-7",
-    dots: false,
     glow: false,
   },
   md: {
     container: "w-12 h-12",
-    dots: true,
     glow: true,
   },
   lg: {
     container: "w-20 h-20",
-    dots: true,
     glow: true,
   },
   xl: {
     container: "w-28 h-28",
-    dots: true,
     glow: true,
   },
 } as const;
@@ -41,7 +36,6 @@ export function BlobSpinner({
   size = "md",
   className,
   label,
-  showDots,
 }: BlobSpinnerProps) {
   const auth = useSafeAuth();
   const user = auth?.user;
@@ -55,12 +49,12 @@ export function BlobSpinner({
 
   const userBlob = user?.blobatar || {};
   const config = SIZES[size] || SIZES.md;
-  const shouldShowDots = showDots ?? config.dots;
+  const displayLabel = label === "Thinking..." ? "cooking something...." : label;
 
   return (
     <div
       role="status"
-      aria-label={label || "Loading..."}
+      aria-label={displayLabel || "Loading..."}
       className={cn(
         "inline-flex flex-col items-center justify-center select-none relative",
         className
@@ -73,18 +67,6 @@ export function BlobSpinner({
             aria-hidden="true"
             className="absolute inset-0 -z-10 rounded-full bg-[var(--color-accent)]/15 blur-xl animate-pulse"
           />
-        )}
-
-        {/* Floating thought dots */}
-        {shouldShowDots && (
-          <div
-            aria-hidden="true"
-            className="absolute -top-2.5 -right-1.5 flex items-center gap-0.5 z-10 pointer-events-none"
-          >
-            <span className="size-1 rounded-full bg-[var(--color-accent)] animate-bounce [animation-delay:-0.32s] opacity-75" />
-            <span className="size-1.5 rounded-full bg-[var(--color-accent)] animate-bounce [animation-delay:-0.16s] opacity-90" />
-            <span className="size-2 rounded-full bg-[var(--color-accent)] animate-bounce shadow-sm" />
-          </div>
         )}
 
         {/* The User Blob in Thinking Expression */}
@@ -102,13 +84,13 @@ export function BlobSpinner({
         </div>
       </div>
 
-      {label && (
-        <span className="mt-2.5 text-xs font-medium text-[var(--color-text-tertiary)] animate-pulse">
-          {label}
+      {displayLabel && (
+        <span className="mt-3 text-xs font-medium text-[var(--color-text-tertiary)] animate-pulse tracking-tight">
+          {displayLabel}
         </span>
       )}
 
-      <span className="sr-only">{label || "Loading..."}</span>
+      <span className="sr-only">{displayLabel || "Loading..."}</span>
     </div>
   );
 }

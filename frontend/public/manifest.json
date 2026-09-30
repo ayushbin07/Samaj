@@ -46,11 +46,6 @@
       "name": "Communities",
       "url": "/community",
       "description": "Explore community posts and feed"
-    },
-    {
-      "name": "Explore",
-      "url": "/explore",
-      "description": "Discover people and discussions"
     }
   ]
 }

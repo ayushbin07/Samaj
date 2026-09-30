@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback, memo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
   X,
   Film,
+  Hash,
 } from "lucide-react";
 import { tweetsApi } from "@/lib/api/tweets";
 import { likesApi } from "@/lib/api/likes";
@@ -30,7 +31,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Tweet, User } from "@/lib/types";
 import ErrorState from "@/components/ui/ErrorState";
 import EmptyState from "@/components/ui/EmptyState";
+import { TrendingCommunity } from "@/components/ui/TrendingCommunity";
 import Link from "next/link";
+import { haptics } from "@/lib/haptics";
+import { extractHashtags } from "@/lib/hashtags";
+import { TweetContent } from "@/components/ui/TweetContent";
+import { LikeButton } from "@/components/spectrumui/like-button";
 
 // Recursively counts all top-level comments and all nested sub-comments
 function countAllComments(items: any[]): number {
@@ -55,7 +61,10 @@ function CommentItem({ comment, currentUser, replyingTo, setReplyingTo, replyMut
 
   const queryClient = useQueryClient();
   const likeMutation = useMutation({
-    mutationFn: () => likesApi.toggleCommentLike(comment._id),
+    mutationFn: () => {
+      haptics.save();
+      return likesApi.toggleCommentLike(comment._id);
+    },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["comment-likes", comment._id] });
       const previousLikes = queryClient.getQueryData(["comment-likes", comment._id]);
@@ -156,12 +165,24 @@ function CommentItem({ comment, currentUser, replyingTo, setReplyingTo, replyMut
                 <TextArea
                   value={replyContent}
                   onValueChange={setReplyContent}
-                  placeholder="Write a reply..."
+                  placeholder="Write a reply... (Press Enter to send)"
                   minRows={1}
                   maxRows={4}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      if (replyContent.trim() && !replyMutation.isPending) {
+                        replyMutation.mutate({
+                          commentId: comment._id,
+                          content: replyContent.trim(),
+                        });
+                        setReplyContent("");
+                      }
+                    }
+                  }}
                   classNames={{
                     inputWrapper:
-                      "min-h-[32px] bg-[var(--color-surface)] border border-[var(--color-border)] focus-within:border-[var(--color-accent)] rounded-xl px-3 py-1.5",
+                      "min-h-[32px] bg-[var(--color-surface)] border border-[var(--color-border)] focus-within:border-[var(--color-accent)] rounded-xl px-3 py-1.5 transition-colors",
                     input: "text-xs",
                   }}
                 />
@@ -549,6 +570,11 @@ function CommentsSection({
     },
   });
 
+  const handleCommentSubmit = () => {
+    if (!newComment.trim() || commentMutation.isPending) return;
+    commentMutation.mutate(newComment.trim());
+  };
+
   const comments: any[] = data?.data?.docs || [];
 
   // Total comment count includes top-level comments and all their nested sub-comments
@@ -587,12 +613,18 @@ function CommentsSection({
           <TextArea
             value={newComment}
             onValueChange={setNewComment}
-            placeholder="Write a comment..."
+            placeholder="Write a comment... (Press Enter to post, Shift+Enter for new line)"
             minRows={1}
             maxRows={4}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleCommentSubmit();
+              }
+            }}
             classNames={{
               inputWrapper:
-                "min-h-[40px] bg-[var(--color-surface-2)] border-transparent focus-within:border-[var(--color-accent)] rounded-xl px-3 py-2",
+                "min-h-[40px] bg-[var(--color-surface-2)] border-transparent focus-within:border-[var(--color-accent)] rounded-xl px-3 py-2 transition-colors",
               input: "text-xs",
             }}
           />
@@ -602,7 +634,7 @@ function CommentsSection({
                 size="sm"
                 radius="full"
                 isLoading={commentMutation.isPending}
-                onPress={() => commentMutation.mutate(newComment)}
+                onPress={handleCommentSubmit}
                 className="bg-[var(--color-accent)] text-[#09090B] font-semibold text-[11px] h-7 px-4 shadow-sm"
               >
                 Comment
@@ -680,16 +712,18 @@ function formatTime(dateStr: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function TweetCard({
+const TweetCard = memo(function TweetCard({
   tweet,
   currentUser,
   onEdit,
   onDelete,
+  onTagClick,
 }: {
   tweet: Tweet;
   currentUser: User | null;
   onEdit: (tweet: Tweet) => void;
   onDelete: (tweetId: string) => void;
+  onTagClick?: (tag: string) => void;
 }) {
   const owner = typeof tweet.owner === "object" ? tweet.owner : null;
   const isOwner =
@@ -697,6 +731,8 @@ function TweetCard({
     (typeof tweet.owner === "string"
       ? tweet.owner === currentUser._id
       : tweet.owner._id === currentUser._id);
+
+  const hashtags = extractHashtags(tweet.content);
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -757,12 +793,14 @@ function TweetCard({
   });
 
   const handleLike = () => {
+    haptics.save();
     likeMutation.mutate();
   };
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
+      haptics.selection();
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
     }
@@ -826,7 +864,7 @@ function TweetCard({
             </div>
           </div>
           <p className="text-sm text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap mb-3">
-            {tweet.content}
+            <TweetContent content={tweet.content} onTagClick={onTagClick} />
           </p>
 
           {/* Tweet Media Attachment (image or video) */}
@@ -853,33 +891,50 @@ function TweetCard({
           )}
 
           {/* Social Media Actions */}
-          <div className="flex items-center gap-5 mt-2 pt-3 border-t border-[var(--color-border)]/60 text-xs text-[var(--color-text-tertiary)] relative">
-            <button
-              onClick={handleLike}
-              className={`flex items-center gap-1.5 transition-colors ${
-                isLiked ? "text-red-400" : "hover:text-red-400"
-              }`}
-            >
-              <Heart size={14} className={isLiked ? "fill-current" : ""} />
-              <span>{likeCount}</span>
-            </button>
+          <div className="flex items-center gap-4 mt-2 pt-3 border-t border-[var(--color-border)]/60 text-xs text-[var(--color-text-tertiary)] relative flex-wrap">
+            <LikeButton
+              liked={isLiked}
+              count={isLiked ? Math.max(0, likeCount - 1) : likeCount}
+              onLikedChange={handleLike}
+              size="sm"
+              className="shrink-0"
+            />
 
             <button 
               onClick={() => setShowComments(!showComments)}
-              className={`flex items-center gap-1.5 transition-colors ${showComments ? "text-[var(--color-accent)]" : "hover:text-[var(--color-accent)]"}`}
+              className={`flex items-center gap-1.5 transition-colors shrink-0 ${showComments ? "text-[var(--color-accent)]" : "hover:text-[var(--color-accent)]"}`}
             >
               <MessageSquare size={14} className={showComments ? "fill-[var(--color-accent)]/20" : ""} />
               <span>{commentsCount}</span>
             </button>
 
-            <button onClick={handleShare} className="flex items-center gap-1.5 hover:text-blue-400 transition-colors">
+            <button onClick={handleShare} className="flex items-center gap-1.5 hover:text-blue-400 transition-colors shrink-0">
               {copiedLink ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
               <span>{copiedLink ? "Copied" : "Share"}</span>
             </button>
 
+            {/* Hashtag chips beside share button */}
+            {hashtags.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap overflow-hidden py-0.5">
+                {hashtags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTagClick?.(tag);
+                    }}
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 hover:text-sky-300 border border-sky-500/20 transition-all cursor-pointer"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <button
               onClick={() => setIsBookmarked(!isBookmarked)}
-              className={`flex items-center gap-1.5 transition-colors ml-auto ${
+              className={`flex items-center gap-1.5 transition-colors ml-auto shrink-0 ${
                 isBookmarked ? "text-emerald-400" : "hover:text-emerald-400"
               }`}
             >
@@ -894,15 +949,16 @@ function TweetCard({
       </div>
     </article>
   );
+});
+
+interface TweetComposerProps {
+  user: User | null;
+  onPost: (content: string, media?: File | null) => void;
+  isPosting: boolean;
 }
 
-export default function CommunityPage() {
-  const { user, isAuthenticated } = useAuth();
-  const queryClient = useQueryClient();
-
-  const [newTweet, setNewTweet] = useState("");
-  const [editingTweet, setEditingTweet] = useState<Tweet | null>(null);
-  const [editContent, setEditContent] = useState("");
+function TweetComposer({ user, onPost, isPosting }: TweetComposerProps) {
+  const [content, setContent] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
@@ -940,6 +996,173 @@ export default function CommunityPage() {
     }
   };
 
+  const handleSubmit = () => {
+    if (!content.trim() || isPosting) return;
+    onPost(content.trim(), mediaFile);
+    setContent("");
+    handleRemoveMedia();
+  };
+
+  return (
+    <div className="mb-6 p-5 rounded-2xl bg-[var(--color-surface-2)] border border-[var(--color-border)] shadow-sm">
+      <div className="flex items-start gap-3.5">
+        <UserAvatar user={user} className="w-9 h-9 rounded-full shrink-0 mt-1" animate="always" />
+        <div className="flex-1">
+          <TextArea
+            value={content}
+            onValueChange={setContent}
+            placeholder="What's on your mind? (Press Enter to post, Shift+Enter for new line)"
+            minRows={2}
+            maxRows={6}
+            maxLength={500}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
+            classNames={{
+              inputWrapper:
+                "bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-border-hover)] focus-within:border-[var(--color-accent)] rounded-2xl transition-colors",
+              input:
+                "text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)]",
+            }}
+          />
+
+          {/* Media Preview if attached */}
+          {mediaPreview && (
+            <div className="relative mt-3 rounded-2xl overflow-hidden border border-[var(--color-border)] bg-black/20 group">
+              {mediaType === "video" ? (
+                <video
+                  src={mediaPreview}
+                  controls
+                  playsInline
+                  className="w-full max-h-[300px] object-contain rounded-2xl bg-black"
+                />
+              ) : (
+                <img
+                  src={mediaPreview}
+                  alt="Upload preview"
+                  className="w-full max-h-[300px] object-cover rounded-2xl"
+                />
+              )}
+              <button
+                type="button"
+                onClick={handleRemoveMedia}
+                aria-label="Remove media"
+                className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-black/70 hover:bg-black/90 text-white backdrop-blur-sm transition-all shadow-md cursor-pointer"
+              >
+                <X size={15} />
+              </button>
+              <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-md bg-black/60 text-[11px] text-white/90 backdrop-blur-xs flex items-center gap-1.5">
+                <Film size={12} className="text-[var(--color-accent)]" />
+                <span className="truncate max-w-[200px]">{mediaFile?.name}</span>
+                <span className="text-zinc-400">
+                  • {(mediaFile?.size ? (mediaFile.size / (1024 * 1024)).toFixed(1) : 0)} MB
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-3">
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                  mediaFile
+                    ? "text-[var(--color-accent)] bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30"
+                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] hover:bg-[var(--color-surface)] border border-transparent hover:border-[var(--color-border)]"
+                }`}
+                title="Attach image or video"
+              >
+                <ImageIcon size={16} className="text-[var(--color-accent)]" />
+                <span>{mediaFile ? "Change Media" : "Media"}</span>
+              </button>
+              <span className="text-xs text-[var(--color-text-tertiary)] pl-1">
+                {content.length}/500
+              </span>
+            </div>
+
+            <Button
+              size="sm"
+              radius="full"
+              isLoading={isPosting}
+              isDisabled={!content.trim() || isPosting}
+              onPress={handleSubmit}
+              className="bg-[var(--color-accent)] text-[#09090B] font-semibold px-5"
+              startContent={!isPosting && <Send size={14} />}
+            >
+              {isPosting ? "Posting..." : "Post"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditTweetBox({
+  tweet,
+  onSave,
+  onCancel,
+  isSaving,
+}: {
+  tweet: Tweet;
+  onSave: (content: string) => void;
+  onCancel: () => void;
+  isSaving: boolean;
+}) {
+  const [content, setContent] = useState(tweet.content);
+
+  return (
+    <div className="mb-6 p-5 rounded-2xl bg-[var(--color-surface-2)] border border-[var(--color-accent)]/30">
+      <p className="text-xs text-[var(--color-accent)] font-semibold mb-2 pl-1">
+        Editing post
+      </p>
+      <TextArea
+        value={content}
+        onValueChange={setContent}
+        minRows={2}
+        maxRows={6}
+        classNames={{
+          inputWrapper:
+            "bg-[var(--color-surface)] border border-[var(--color-border)] focus-within:border-[var(--color-accent)] rounded-2xl transition-colors",
+          input: "text-sm text-[var(--color-text-primary)]",
+        }}
+      />
+      <div className="flex items-center gap-2 mt-3 justify-end">
+        <Button size="sm" radius="full" variant="flat" onPress={onCancel}>
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          radius="full"
+          isLoading={isSaving}
+          isDisabled={!content.trim() || isSaving}
+          onPress={() => onSave(content.trim())}
+          className="bg-[var(--color-accent)] text-[#09090B] font-semibold px-5"
+        >
+          Save
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default function CommunityPage() {
+  const { user, isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
+
+  const [editingTweet, setEditingTweet] = useState<Tweet | null>(null);
+
   // Fetch community tweets
   const {
     data: tweetsData,
@@ -956,8 +1179,7 @@ export default function CommunityPage() {
     mutationFn: ({ content, media }: { content: string; media?: File | null }) =>
       tweetsApi.createTweet(content, media),
     onSuccess: () => {
-      setNewTweet("");
-      handleRemoveMedia();
+      haptics.save();
       queryClient.invalidateQueries({ queryKey: ["community-tweets"] });
       if (user?._id) {
         queryClient.invalidateQueries({ queryKey: ["tweets", user._id] });
@@ -969,8 +1191,8 @@ export default function CommunityPage() {
     mutationFn: ({ id, content }: { id: string; content: string }) =>
       tweetsApi.updateTweet(id, content),
     onSuccess: () => {
+      haptics.save();
       setEditingTweet(null);
-      setEditContent("");
       queryClient.invalidateQueries({ queryKey: ["community-tweets"] });
     },
   });
@@ -978,6 +1200,7 @@ export default function CommunityPage() {
   const deleteMutation = useMutation({
     mutationFn: (tweetId: string) => tweetsApi.deleteTweet(tweetId),
     onSuccess: () => {
+      haptics.error();
       queryClient.invalidateQueries({ queryKey: ["community-tweets"] });
       if (user?._id) {
         queryClient.invalidateQueries({ queryKey: ["tweets", user._id] });
@@ -985,23 +1208,73 @@ export default function CommunityPage() {
     },
   });
 
-  const handleCreate = () => {
-    if (!newTweet.trim()) return;
-    if (createMutation.isPending) return;
-    createMutation.mutate({ content: newTweet.trim(), media: mediaFile });
-  };
+  const handleCreate = useCallback(
+    (content: string, media?: File | null) => {
+      createMutation.mutate({ content, media });
+    },
+    [createMutation]
+  );
 
-  const handleEdit = (tweet: Tweet) => {
+  const handleEdit = useCallback((tweet: Tweet) => {
     setEditingTweet(tweet);
-    setEditContent(tweet.content);
-  };
+  }, []);
 
-  const handleUpdate = () => {
-    if (!editingTweet || !editContent.trim()) return;
-    updateMutation.mutate({ id: editingTweet._id, content: editContent.trim() });
-  };
+  const handleUpdate = useCallback(
+    (content: string) => {
+      if (!editingTweet || !content.trim()) return;
+      updateMutation.mutate({ id: editingTweet._id, content: content.trim() });
+    },
+    [editingTweet, updateMutation]
+  );
+
+  const handleDelete = useCallback(
+    (tweetId: string) => {
+      deleteMutation.mutate(tweetId);
+    },
+    [deleteMutation]
+  );
 
   const tweets: Tweet[] = tweetsData?.data?.docs ?? [];
+
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tag = params.get("tag");
+      if (tag) {
+        setSelectedTag(tag.startsWith("#") ? tag : `#${tag}`);
+      }
+    }
+  }, []);
+
+  const handleTagClick = (tag: string) => {
+    const normalized = tag.startsWith("#") ? tag : `#${tag}`;
+    if (selectedTag?.toLowerCase() === normalized.toLowerCase()) {
+      setSelectedTag(null);
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    } else {
+      setSelectedTag(normalized);
+      if (typeof window !== "undefined") {
+        window.history.replaceState(
+          {},
+          "",
+          `?tag=${encodeURIComponent(normalized.replace("#", ""))}`
+        );
+      }
+    }
+  };
+
+  const filteredTweets = useMemo(() => {
+    if (!selectedTag) return tweets;
+    const target = selectedTag.toLowerCase();
+    return tweets.filter((t) => {
+      const tags = extractHashtags(t.content);
+      return tags.some((tag) => tag.toLowerCase() === target);
+    });
+  }, [tweets, selectedTag]);
 
   return (
     <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
@@ -1028,159 +1301,33 @@ export default function CommunityPage() {
         {/* Main Feed */}
         <div className="lg:col-span-8 space-y-6">
           {/* Compose */}
-      {isAuthenticated ? (
-        <div className="mb-6 p-5 rounded-2xl bg-[var(--color-surface-2)] border border-[var(--color-border)] shadow-sm">
-          <div className="flex items-start gap-3.5">
-            <UserAvatar user={user} className="w-9 h-9 rounded-full shrink-0 mt-1" animate="always" />
-            <div className="flex-1">
-              <TextArea
-                value={newTweet}
-                onValueChange={setNewTweet}
-                placeholder="What's on your mind? (Press Enter to post, Shift+Enter for new line)"
-                minRows={2}
-                maxRows={6}
-                maxLength={500}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleCreate();
-                  }
-                }}
-                classNames={{
-                  inputWrapper:
-                    "bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-border-hover)] focus-within:border-[var(--color-accent)] rounded-2xl",
-                  input:
-                    "text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)]",
-                }}
-              />
-
-              {/* Media Preview if attached */}
-              {mediaPreview && (
-                <div className="relative mt-3 rounded-2xl overflow-hidden border border-[var(--color-border)] bg-black/20 group">
-                  {mediaType === "video" ? (
-                    <video
-                      src={mediaPreview}
-                      controls
-                      playsInline
-                      className="w-full max-h-[300px] object-contain rounded-2xl bg-black"
-                    />
-                  ) : (
-                    <img
-                      src={mediaPreview}
-                      alt="Upload preview"
-                      className="w-full max-h-[300px] object-cover rounded-2xl"
-                    />
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleRemoveMedia}
-                    aria-label="Remove media"
-                    className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-black/70 hover:bg-black/90 text-white backdrop-blur-sm transition-all shadow-md cursor-pointer"
-                  >
-                    <X size={15} />
-                  </button>
-                  <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-md bg-black/60 text-[11px] text-white/90 backdrop-blur-xs flex items-center gap-1.5">
-                    <Film size={12} className="text-[var(--color-accent)]" />
-                    <span className="truncate max-w-[200px]">{mediaFile?.name}</span>
-                    <span className="text-zinc-400">
-                      • {(mediaFile?.size ? (mediaFile.size / (1024 * 1024)).toFixed(1) : 0)} MB
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,video/*"
-                    className="hidden"
-                    onChange={handleFileSelect}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                      mediaFile
-                        ? "text-[var(--color-accent)] bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30"
-                        : "text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] hover:bg-[var(--color-surface)] border border-transparent hover:border-[var(--color-border)]"
-                    }`}
-                    title="Attach image or video"
-                  >
-                    <ImageIcon size={16} className="text-[var(--color-accent)]" />
-                    <span>{mediaFile ? "Change Media" : "Media"}</span>
-                  </button>
-                  <span className="text-xs text-[var(--color-text-tertiary)] pl-1">
-                    {newTweet.length}/500
-                  </span>
-                </div>
-
-                <Button
-                  size="sm"
-                  radius="full"
-                  isLoading={createMutation.isPending}
-                  isDisabled={!newTweet.trim() || createMutation.isPending}
-                  onPress={handleCreate}
-                  className="bg-[var(--color-accent)] text-[#09090B] font-semibold px-5"
-                  startContent={!createMutation.isPending && <Send size={14} />}
-                >
-                  {createMutation.isPending ? "Posting..." : "Post"}
-                </Button>
-              </div>
+          {isAuthenticated ? (
+            <TweetComposer
+              user={user}
+              onPost={handleCreate}
+              isPosting={createMutation.isPending}
+            />
+          ) : (
+            <div className="mb-6 p-5 rounded-2xl bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center gap-3">
+              <Lock size={16} className="text-[var(--color-text-tertiary)]" />
+              <span className="text-sm text-[var(--color-text-secondary)]">
+                <Link href="/login" className="text-[var(--color-accent)] font-medium hover:underline">
+                  Sign in
+                </Link>{" "}
+                to post in the community.
+              </span>
             </div>
-          </div>
-        </div>
-      ) : (
-        <div className="mb-6 p-5 rounded-2xl bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center gap-3">
-          <Lock size={16} className="text-[var(--color-text-tertiary)]" />
-          <span className="text-sm text-[var(--color-text-secondary)]">
-            <Link href="/login" className="text-[var(--color-accent)] font-medium hover:underline">
-              Sign in
-            </Link>{" "}
-            to post in the community.
-          </span>
-        </div>
-      )}
+          )}
 
-      {/* Edit modal inline */}
-      {editingTweet && (
-        <div className="mb-6 p-5 rounded-2xl bg-[var(--color-surface-2)] border border-[var(--color-accent)]/30">
-          <p className="text-xs text-[var(--color-accent)] font-semibold mb-2 pl-1">
-            Editing post
-          </p>
-          <TextArea
-            value={editContent}
-            onValueChange={setEditContent}
-            minRows={2}
-            maxRows={6}
-            classNames={{
-              inputWrapper:
-                "bg-[var(--color-surface)] border border-[var(--color-border)] focus-within:border-[var(--color-accent)] rounded-2xl",
-              input: "text-sm text-[var(--color-text-primary)]",
-            }}
-          />
-          <div className="flex items-center gap-2 mt-3 justify-end">
-            <Button
-              size="sm"
-              radius="full"
-              variant="flat"
-              onPress={() => setEditingTweet(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              radius="full"
-              isLoading={updateMutation.isPending}
-              onPress={handleUpdate}
-              className="bg-[var(--color-accent)] text-[#09090B] font-semibold px-5"
-            >
-              Save
-            </Button>
-          </div>
-        </div>
-      )}
+          {/* Edit modal inline */}
+          {editingTweet && (
+            <EditTweetBox
+              tweet={editingTweet}
+              onSave={handleUpdate}
+              onCancel={() => setEditingTweet(null)}
+              isSaving={updateMutation.isPending}
+            />
+          )}
 
       {/* Tweets list */}
       {!isAuthenticated ? (
@@ -1202,29 +1349,62 @@ export default function CommunityPage() {
             }
           />
         </div>
-      ) : isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Spinner size="lg" />
-        </div>
-      ) : isError ? (
-        <ErrorState onRetry={refetch} />
-      ) : tweets.length === 0 ? (
-        <EmptyState
-          title="No posts yet"
-          description="Be the first to share something with your community."
-          icon={<MessageSquare size={32} className="text-[var(--color-accent)]" />}
-        />
       ) : (
         <div className="space-y-4">
-          {tweets.map((tweet) => (
-            <TweetCard
-              key={tweet._id}
-              tweet={tweet}
-              currentUser={user}
-              onEdit={handleEdit}
-              onDelete={(id) => deleteMutation.mutate(id)}
+          {/* Active Hashtag Filter Banner */}
+          {selectedTag && (
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs">
+              <div className="flex items-center gap-2">
+                <Hash size={14} className="text-sky-400 shrink-0" />
+                <span>
+                  Showing posts tagged{" "}
+                  <strong className="font-semibold text-sky-300">
+                    {selectedTag}
+                  </strong>{" "}
+                  ({filteredTweets.length})
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleTagClick(selectedTag)}
+                className="flex items-center gap-1 text-[11px] font-medium hover:text-sky-200 transition-colors cursor-pointer"
+              >
+                <X size={13} />
+                Clear filter
+              </button>
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Spinner size="lg" />
+            </div>
+          ) : isError ? (
+            <ErrorState onRetry={refetch} />
+          ) : filteredTweets.length === 0 ? (
+            <EmptyState
+              title={selectedTag ? `No posts tagged ${selectedTag}` : "No posts yet"}
+              description={
+                selectedTag
+                  ? "Try clicking another tag or clear the filter to see all posts."
+                  : "Be the first to share something with your community."
+              }
+              icon={<MessageSquare size={32} className="text-[var(--color-accent)]" />}
             />
-          ))}
+          ) : (
+            <div className="space-y-4">
+              {filteredTweets.map((tweet) => (
+                <TweetCard
+                  key={tweet._id}
+                  tweet={tweet}
+                  currentUser={user}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onTagClick={handleTagClick}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
         </div>
@@ -1250,6 +1430,8 @@ export default function CommunityPage() {
               <li>No spam, scams, or hateful conduct</li>
             </ul>
           </div>
+
+          <TrendingCommunity currentUserId={user?._id} onSelectTag={handleTagClick} />
         </div>
       </div>
     </div>

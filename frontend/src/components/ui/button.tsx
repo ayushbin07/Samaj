@@ -40,17 +40,32 @@ const buttonVariants = cva(
   }
 )
 
+import { triggerHaptic, type HapticPreset } from "@/lib/haptics"
+
+export interface ButtonProps
+  extends React.ComponentProps<"button">,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  haptic?: HapticPreset | boolean
+}
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  haptic,
+  onClick,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
+}: ButtonProps) {
   const Comp = asChild ? Slot.Root : "button"
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (haptic !== false) {
+      triggerHaptic(typeof haptic === "string" ? haptic : "tap")
+    }
+    onClick?.(e)
+  }
 
   return (
     <Comp
@@ -58,9 +73,11 @@ function Button({
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
+      onClick={asChild ? onClick : handleClick}
       {...props}
     />
   )
 }
 
 export { Button, buttonVariants }
+

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { haptics } from "@/lib/haptics";
 
 const EXPRESSIONS = [
   { key: "idle", label: "Idle" },
@@ -220,6 +221,7 @@ export default function SettingsPage() {
       return;
     }
 
+    haptics.toggle();
     setActiveAvatarType(newType);
     setSwitchingAvatarType(true);
     setAvatarMsg(null);
@@ -227,6 +229,7 @@ export default function SettingsPage() {
       // Store avatar choice directly in MongoDB database
       await authApi.switchAvatarType(newType);
       await refreshUser();
+      haptics.save();
       setAvatarMsg({
         type: "success",
         text: `Active profile avatar choice saved in database: switched to ${
@@ -234,6 +237,7 @@ export default function SettingsPage() {
         }.`,
       });
     } catch (err: unknown) {
+      haptics.error();
       setAvatarMsg({
         type: "error",
         text: getErrorMessage(err, "Failed to save avatar preference in database."),
@@ -258,11 +262,13 @@ export default function SettingsPage() {
       setBlobatarBodyColor("");
       setBlobatarEyeColor("");
       setActiveAvatarType("blobatar");
+      haptics.save();
       setAvatarMsg({
         type: "success",
         text: "Blobatar reset to natural ID defaults.",
       });
     } catch (err: unknown) {
+      haptics.error();
       setAvatarMsg({
         type: "error",
         text: getErrorMessage(err, "Failed to reset Blobatar."),
@@ -285,11 +291,13 @@ export default function SettingsPage() {
       await authApi.updateAvatar(formData);
       await refreshUser();
       setActiveAvatarType("upload");
+      haptics.save();
       setAvatarMsg({
         type: "success",
         text: "Profile picture uploaded and set as active avatar.",
       });
     } catch (err: unknown) {
+      haptics.error();
       setAvatarMsg({
         type: "error",
         text: getErrorMessage(err, "Failed to upload avatar."),
@@ -309,11 +317,13 @@ export default function SettingsPage() {
       formData.append("coverImage", file);
       await authApi.updateCoverImage(formData);
       await refreshUser();
+      haptics.save();
       setProfileMsg({
         type: "success",
         text: "Cover image updated successfully.",
       });
     } catch (err: unknown) {
+      haptics.error();
       setProfileMsg({
         type: "error",
         text: getErrorMessage(err, "Failed to update cover image."),
@@ -330,8 +340,10 @@ export default function SettingsPage() {
       await authApi.updateAccount({ fullName, email });
       await authApi.updateBlobatarConfig(liveBlobatarOverrides);
       await refreshUser();
+      haptics.save();
       setProfileMsg({ type: "success", text: "Your account changes have been saved." });
     } catch (err: unknown) {
+      haptics.error();
       setProfileMsg({
         type: "error",
         text: getErrorMessage(err, "Update failed."),
@@ -349,11 +361,13 @@ export default function SettingsPage() {
       await authApi.changePassword({ oldPassword, newPassword });
       setOldPassword("");
       setNewPassword("");
+      haptics.save();
       setPasswordMsg({
         type: "success",
         text: "Password changed successfully.",
       });
     } catch (err: unknown) {
+      haptics.error();
       setPasswordMsg({
         type: "error",
         text: getErrorMessage(err, "Password change failed."),

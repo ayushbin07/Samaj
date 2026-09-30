@@ -6,10 +6,11 @@ import { Search, Bell, Plus, LogOut, User as UserIcon, Settings, ChevronDown, Lo
 
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePwa } from "@/components/pwa/PwaProvider";
+import { usePwa } from "@/app/pwa-provider";
 import { useState, useRef } from "react";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { triggerHaptic } from "@/lib/haptics";
 
 export default function Topbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -23,11 +24,12 @@ export default function Topbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/community?search=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
   const handleLogout = async () => {
+    triggerHaptic();
     setMenuOpen(false);
     await logout();
     router.push("/");
@@ -37,9 +39,13 @@ export default function Topbar() {
     <header className="sticky top-0 z-40 h-14 border-b border-[var(--color-border)] bg-[var(--color-surface)]/90 backdrop-blur-md flex items-center px-4 gap-4">
       {/* Sidebar Trigger & Mobile Logo */}
       <div className="flex items-center gap-2 shrink-0">
-        <SidebarTrigger className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]" />
+        <SidebarTrigger
+          onClick={() => triggerHaptic()}
+          className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
+        />
         <Link
           href="/"
+          onClick={() => triggerHaptic()}
           className="md:hidden flex items-center gap-2 font-bold text-lg text-[var(--color-text-primary)] shrink-0"
         >
           <span className="text-[var(--color-accent)] font-black">●</span>
@@ -65,7 +71,10 @@ export default function Topbar() {
         {isInstallable && !isInstalled && (
           <button
             type="button"
-            onClick={installPwa}
+            onClick={() => {
+              triggerHaptic();
+              installPwa();
+            }}
             className="h-8 px-3 rounded-full bg-[var(--color-accent)]/15 hover:bg-[var(--color-accent)] text-[var(--color-accent)] hover:text-[#09090B] border border-[var(--color-accent)]/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
             title="Install Community App"
           >
@@ -77,7 +86,7 @@ export default function Topbar() {
         {isAuthenticated ? (
 
           <>
-            <Link href="/community">
+            <Link href="/community" onClick={() => triggerHaptic()}>
               <button
                 className="p-2 rounded-full text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors cursor-pointer"
                 aria-label="Create post"
@@ -99,7 +108,10 @@ export default function Topbar() {
             {/* Avatar dropdown */}
             <div className="relative" ref={menuRef}>
               <button
-                onClick={() => setMenuOpen((o) => !o)}
+                onClick={() => {
+                  triggerHaptic();
+                  setMenuOpen((o) => !o);
+                }}
                 className="flex items-center gap-1.5 rounded-full p-1 hover:bg-[var(--color-surface-hover)] transition-colors"
                 aria-label="User menu"
               >
@@ -131,7 +143,10 @@ export default function Topbar() {
                     <nav className="space-y-0.5">
                       <Link
                         href={`/channel/${user?.username}`}
-                        onClick={() => setMenuOpen(false)}
+                        onClick={() => {
+                          triggerHaptic();
+                          setMenuOpen(false);
+                        }}
                         className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors"
                       >
                         <UserIcon size={14} />
@@ -139,7 +154,10 @@ export default function Topbar() {
                       </Link>
                       <Link
                         href="/settings"
-                        onClick={() => setMenuOpen(false)}
+                        onClick={() => {
+                          triggerHaptic();
+                          setMenuOpen(false);
+                        }}
                         className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors"
                       >
                         <Settings size={14} />
@@ -160,13 +178,13 @@ export default function Topbar() {
           </>
         ) : (
           <div className="flex items-center gap-2">
-            <Link href="/login">
+            <Link href="/login" onClick={() => triggerHaptic()}>
               <button className="flex items-center gap-1.5 h-9 px-4 text-xs sm:text-sm font-semibold rounded-full border border-[var(--color-border)] text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-2)] transition-colors">
                 <LogIn size={14} className="text-[var(--color-text-secondary)]" />
                 <span>Sign In</span>
               </button>
             </Link>
-            <Link href="/register">
+            <Link href="/register" onClick={() => triggerHaptic()}>
               <button className="h-9 px-4 text-xs sm:text-sm font-semibold rounded-full bg-[var(--color-accent)] text-[#09090B] hover:bg-[var(--color-accent-hover)] transition-colors shadow-sm">
                 Get Started
               </button>

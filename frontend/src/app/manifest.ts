@@ -53,12 +53,6 @@ export default function manifest(): MetadataRoute.Manifest {
         description: "Explore community posts and feed",
         icons: [{ src: "/icons/icon-192x192.png", sizes: "192x192" }],
       },
-      {
-        name: "Explore",
-        url: "/explore",
-        description: "Discover people and discussions",
-        icons: [{ src: "/icons/icon-192x192.png", sizes: "192x192" }],
-      },
     ],
   };
 }

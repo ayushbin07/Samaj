@@ -6,12 +6,11 @@ import { subscriptionsApi } from "@/lib/api/subscriptions";
 import { usersApi } from "@/lib/api/users";
 import { Spinner, Button } from "@/components/ui";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { Users, Sparkles, TrendingUp } from "lucide-react";
+import { Users, Sparkles } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import ErrorState from "@/components/ui/ErrorState";
-import VideoGrid from "@/components/video/VideoGrid";
-import { SAMPLE_VIDEOS } from "@/lib/data/mockVideos";
 import Link from "next/link";
+import { haptics } from "@/lib/haptics";
 import type { Subscription, User } from "@/lib/types";
 
 const FEATURED_CREATORS = [
@@ -183,16 +182,15 @@ export default function SubscriptionsPage() {
                   typeof sub.channel === "object" ? (sub.channel as User) : null;
                 if (!channel) return null;
 
-                // Determine what to show as a preview (actual last video > actual last tweet > mock fallback)
-                const hasRealVideo = !!sub.lastVideo;
+                // Determine what to show as a preview (actual last video > actual last tweet > clean profile card)
+                const hasRealVideo = !!sub.lastVideo && !!sub.lastVideo.thumbnail;
                 const hasRealTweet = !hasRealVideo && !!sub.lastTweet;
-                
-                const fallbackVideo = SAMPLE_VIDEOS[Math.floor(Math.random() * SAMPLE_VIDEOS.length)];
                 
                 return (
                   <Link
                     key={sub._id}
                     href={`/channel/${channel.username}`}
+                    onClick={() => haptics.selection()}
                     className="flex flex-col p-4 rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] hover:border-[var(--color-border-hover)] transition-all duration-200 group"
                   >
                     <div className="flex items-center gap-3.5 mb-4">
@@ -211,7 +209,7 @@ export default function SubscriptionsPage() {
                       </div>
                     </div>
 
-                    {/* Preview of previous works */}
+                    {/* Preview */}
                     <div className="mt-auto relative rounded-2xl overflow-hidden aspect-video border border-[var(--color-border)]/50 bg-[var(--color-surface-2)] flex flex-col justify-center">
                       {hasRealVideo ? (
                         <>
@@ -228,22 +226,14 @@ export default function SubscriptionsPage() {
                         </>
                       ) : hasRealTweet ? (
                         <div className="p-4 flex flex-col justify-center h-full">
-                           <p className="text-[10px] font-medium text-[var(--color-accent)] mb-1 uppercase tracking-wider">Latest Tweet</p>
-                           <p className="text-xs text-[var(--color-text-primary)] line-clamp-4 italic">"{sub.lastTweet!.content}"</p>
+                           <p className="text-[10px] font-medium text-[var(--color-accent)] mb-1 uppercase tracking-wider">Latest Update</p>
+                           <p className="text-xs text-[var(--color-text-primary)] line-clamp-4 italic">&ldquo;{sub.lastTweet!.content}&rdquo;</p>
                         </div>
                       ) : (
-                        <>
-                          <img 
-                            src={fallbackVideo.thumbnail} 
-                            alt="Recent upload preview" 
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 grayscale opacity-60"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-90" />
-                          <div className="absolute bottom-2 left-3 right-3">
-                            <p className="text-[10px] font-medium text-amber-400 mb-0.5 uppercase tracking-wider">No Recent Activity</p>
-                            <p className="text-xs font-semibold text-gray-300 truncate">Visit channel to see more</p>
-                          </div>
-                        </>
+                        <div className="p-4 flex flex-col justify-center items-center text-center h-full bg-[var(--color-surface)]/50">
+                          <p className="text-[11px] font-semibold text-[var(--color-accent)] mb-0.5">Community Member</p>
+                          <p className="text-[11px] text-[var(--color-text-tertiary)]">Visit profile to view updates & discussions</p>
+                        </div>
                       )}
                     </div>
                   </Link>
@@ -321,17 +311,6 @@ export default function SubscriptionsPage() {
                 </div>
               ))}
             </div>
-          </section>
-
-          {/* Trending videos */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp size={18} className="text-[var(--color-accent)]" />
-              <h2 className="text-lg font-bold text-[var(--color-text-primary)]">
-                Trending on Samaj
-              </h2>
-            </div>
-            <VideoGrid videos={SAMPLE_VIDEOS.slice(0, 4)} />
           </section>
         </div>
       )}

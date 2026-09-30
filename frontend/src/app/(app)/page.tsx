@@ -11,15 +11,19 @@ import {
   ArrowRight,
   Clock,
   UserPlus,
+  BookOpen,
+  Heart,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { communitiesApi } from "@/lib/api/communities";
 import { usersApi } from "@/lib/api/users";
 import { tweetsApi } from "@/lib/api/tweets";
 import { subscriptionsApi } from "@/lib/api/subscriptions";
 import { UserAvatar, BLOBATAR_EXPRESSIONS, type ExpressionKey } from "@/components/ui/user-avatar";
 import { Blobatar as BlobatarRenderer } from "@blobatar/react";
-import type { Community, User, Tweet, ActivityItem } from "@/lib/types";
+import type { User, Tweet, ActivityItem } from "@/lib/types";
+import { haptics } from "@/lib/haptics";
+import { extractHashtags } from "@/lib/hashtags";
+import { TweetContent } from "@/components/ui/TweetContent";
 
 // Complete list of Blobatar expressions supported by the system
 const ALL_BLOBATAR_EXPRESSIONS: ExpressionKey[] = [
@@ -108,49 +112,56 @@ export default function HomePage() {
   }, [availableExpressions, getExpressionByTime]);
 
 
-  // 2. Fetch authentic communities from MongoDB
-  const { data: communitiesData, isLoading: communitiesLoading } = useQuery({
-    queryKey: ["communities"],
-    queryFn: communitiesApi.getAllCommunities,
-  });
-
-  // 3. Fetch recommended people you may know from MongoDB
+  // 2. Fetch recommended people you may know from MongoDB
   const { data: recommendedData, isLoading: recommendedLoading } = useQuery({
     queryKey: ["recommended-users"],
     queryFn: () => usersApi.getRecommendedUsers(6),
   });
 
-  // 4. Fetch active discussions with authentic comments/replies from MongoDB
+  // 3. Fetch active discussions with authentic comments/replies from MongoDB
   const { data: discussionsData, isLoading: discussionsLoading } = useQuery({
     queryKey: ["active-discussions"],
     queryFn: () => tweetsApi.getActiveDiscussions(6),
   });
 
-  // 5. Fetch real recent community activity timeline from MongoDB
+  // 4. Fetch real recent community activity timeline from MongoDB
   const { data: activityData, isLoading: activityLoading } = useQuery({
     queryKey: ["recent-activity"],
     queryFn: usersApi.getRecentActivity,
   });
 
-  // Mutation for joining / leaving a community
-  const joinMutation = useMutation({
-    mutationFn: (communityId: string) =>
-      communitiesApi.toggleJoinCommunity(communityId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["communities"] });
-    },
+  // Priority #blog detection: Fetch community tweets to filter and spotlight #blog posts
+  const { data: communityTweetsData, isLoading: blogLoading } = useQuery({
+    queryKey: ["community-tweets", "homepage-blog"],
+    queryFn: () => tweetsApi.getCommunityTweets(1, 50),
   });
+
+  const blogTweets = React.useMemo(() => {
+    const docs = communityTweetsData?.data?.docs || [];
+    return docs
+      .filter((t: Tweet) => {
+        const tags = extractHashtags(t.content);
+        return tags.some((tag) => tag.toLowerCase() === "#blog");
+      })
+      .sort((a: Tweet, b: Tweet) => {
+        const likesB = b.likesCount || 0;
+        const likesA = a.likesCount || 0;
+        if (likesB !== likesA) return likesB - likesA;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      })
+      .slice(0, 3);
+  }, [communityTweetsData]);
 
   // Mutation for following a user with optimistic state
   const followMutation = useMutation({
     mutationFn: (userId: string) => subscriptionsApi.toggleSubscription(userId),
     onSuccess: () => {
+      haptics.save();
       queryClient.invalidateQueries({ queryKey: ["recommended-users"] });
       queryClient.invalidateQueries({ queryKey: ["recent-activity"] });
     },
   });
 
-  const communities: Community[] = communitiesData?.data || [];
   const recommendedUsers: User[] = (recommendedData?.data as any) || [];
   const activeDiscussions: Tweet[] = discussionsData?.data || [];
   const recentActivities: ActivityItem[] = activityData?.data || [];
@@ -172,7 +183,7 @@ export default function HomePage() {
             {greeting}, {displayName}
           </h1>
           <p className="text-sm leading-relaxed text-[var(--color-text-secondary)] max-w-md">
-            Here&apos;s what&apos;s happening across your communities.
+            Here&apos;s what&apos;s happening across your network.
           </p>
         </div>
 
@@ -201,105 +212,135 @@ export default function HomePage() {
         </div>
       </section>
 
-
-      {/* 2. Your Communities Horizontal Cards */}
-      <section className="enter-stage-delayed space-y-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2
-              className="text-base sm:text-lg font-bold text-[var(--color-text-primary)] -tracking-[0.02em]"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Your Communities
-            </h2>
-            {communities.length > 0 && (
-              <span className="text-xs px-2 py-0.5 rounded-md bg-[var(--color-surface-2)] text-[var(--color-text-tertiary)] font-medium">
-                {communities.length}
-              </span>
-            )}
-          </div>
-          <Link
-            href="/community"
-            className="text-xs font-semibold text-[var(--color-accent)] hover:underline inline-flex items-center gap-1"
-          >
-            <span>View feed</span>
-            <ArrowRight size={13} />
-          </Link>
-        </div>
-
-        {communitiesLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="h-36 rounded-xl bg-[var(--color-surface-2)]/60 animate-pulse"
-              />
-            ))}
-          </div>
-        ) : communities.length === 0 ? (
-          <div className="p-8 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-center">
-            <p className="text-xs text-[var(--color-text-tertiary)]">
-              No communities found.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
-            {communities.map((community, index) => (
-              <div
-                key={community._id}
-                className={`group relative p-1.5 rounded-[1.65rem] bg-[var(--color-surface-2)] transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1.5 hover:shadow-[0_22px_40px_-32px_rgba(43,28,14,0.78)] ${index === 0 ? "lg:col-span-4" : index === 1 || index === 2 ? "lg:col-span-3" : "lg:col-span-2"}`}
-              >
-                <div className="rounded-[1.28rem] bg-[var(--color-surface)] p-4 h-full flex flex-col justify-between shadow-[inset_0_1px_0_rgba(255,255,255,0.13)]">
-                  <div className="flex items-center justify-between gap-2 mb-2.5">
-                    <MessageSquare size={19} className="text-[var(--color-accent)]" aria-label={community.icon ? `${community.icon} community` : "Community"} />
-                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] font-medium">
-                      {community.category}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-sm text-[var(--color-text-primary)] truncate">
-                    {community.name}
-                  </h3>
-                  <p className="text-[11px] text-[var(--color-text-secondary)] line-clamp-2 mt-1 leading-snug">
-                    {community.description}
-                  </p>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-[var(--color-border)]/60 flex items-center justify-between">
-                  <span className="text-xs text-[var(--color-text-tertiary)] font-medium">
-                    {community.membersCount} {community.membersCount === 1 ? "member" : "members"}
-                  </span>
-
-                  {isAuthenticated ? (
-                    <button
-                      onClick={() => joinMutation.mutate(community._id)}
-                      disabled={joinMutation.isPending}
-                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-md transition-all cursor-pointer ${
-                        community.isMember
-                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20"
-                          : "bg-[var(--color-accent)]/15 text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)] border border-[var(--color-accent)]/30"
-                      }`}
-                    >
-                      {community.isMember ? "Joined" : "Join"}
-                    </button>
-                  ) : (
-                    <Link
-                      href="/login"
-                      className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-[var(--color-border)]"
-                    >
-                      Join
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
       {/* Main Grid: Left Column (Discussions & People) + Right Column (Recent Activity) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column */}
         <div className="lg:col-span-8 space-y-9">
+          {/* Highest Priority: Featured #blog Section */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen size={18} className="text-sky-400" />
+                <h2
+                  className="text-base sm:text-lg font-bold text-[var(--color-text-primary)] -tracking-[0.02em] flex items-center gap-2"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Featured Blogs
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                    #blog
+                  </span>
+                </h2>
+              </div>
+              <Link
+                href="/community?tag=blog"
+                className="text-xs font-semibold text-[var(--color-accent)] hover:underline inline-flex items-center gap-1"
+              >
+                <span>Browse all</span>
+                <ArrowRight size={13} />
+              </Link>
+            </div>
+
+            {blogLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="h-28 rounded-2xl bg-[var(--color-surface-2)]/60 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : blogTweets.length === 0 ? (
+              <div className="p-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+                    No #blog posts yet
+                  </p>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    Tag any community post with <span className="font-semibold text-sky-400">#blog</span> to feature it here on the homepage with top priority.
+                  </p>
+                </div>
+                <Link
+                  href="/community"
+                  className="px-4 py-2 rounded-full text-xs font-semibold bg-[var(--color-accent)] text-[#09090B] hover:opacity-90 transition-opacity shrink-0"
+                >
+                  Write a #blog &rarr;
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3.5">
+                {blogTweets.map((blog) => {
+                  const author = typeof blog.owner === "object" ? blog.owner : null;
+                  const replyCount = (blog as any).commentsCount ?? (blog as any).repliesCount ?? 0;
+                  return (
+                    <Link
+                      key={blog._id}
+                      href={`/community?tag=blog`}
+                      className="group block p-5 rounded-2xl bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border)] hover:border-sky-500/40 transition-all space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {author && (
+                            <UserAvatar
+                              user={author}
+                              className="w-8 h-8 rounded-full shrink-0"
+                              animate="hover"
+                            />
+                          )}
+                          <div className="min-w-0">
+                            <span className="font-semibold text-xs text-[var(--color-text-primary)] group-hover:text-sky-400 transition-colors truncate block">
+                              {author?.fullName || author?.username || "Author"}
+                            </span>
+                            <span className="text-[10px] text-[var(--color-text-tertiary)] truncate block">
+                              @{author?.username}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                            #blog
+                          </span>
+                          <span className="text-[10px] text-[var(--color-text-tertiary)]">
+                            {formatRelativeTime(blog.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-[var(--color-text-primary)] leading-relaxed line-clamp-3">
+                        <TweetContent content={blog.content} />
+                      </p>
+
+                      {blog.media?.url && (
+                        <div className="rounded-xl overflow-hidden max-h-[220px] bg-black/20 border border-[var(--color-border)]/60">
+                          <img
+                            src={blog.media.url}
+                            alt="Blog visual"
+                            className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-300"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-2 border-t border-[var(--color-border)]/50 text-[11px] text-[var(--color-text-tertiary)]">
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <Heart size={12} className="text-red-400" />
+                            {blog.likesCount || 0}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MessageSquare size={12} className="text-sky-400" />
+                            {replyCount}
+                          </span>
+                        </div>
+                        <span className="text-sky-400 font-medium group-hover:underline flex items-center gap-0.5 text-xs">
+                          Read in Community &rarr;
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
           {/* 4. Active Discussions */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
@@ -405,10 +446,11 @@ export default function HomePage() {
                 </p>
               </div>
               <Link
-                href="/explore"
+                href="/subscriptions"
+                onClick={() => haptics.selection()}
                 className="text-xs font-semibold text-[var(--color-accent)] hover:underline inline-flex items-center gap-1"
               >
-                <span>Explore all</span>
+                <span>View all</span>
                 <ArrowRight size={13} />
               </Link>
             </div>

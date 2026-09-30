@@ -24,6 +24,7 @@ import { subscriptionsApi } from "@/lib/api/subscriptions";
 import { SAMPLE_VIDEOS, INITIAL_COMMENTS, type CommentItem } from "@/lib/data/mockVideos";
 import type { Video, User } from "@/lib/types";
 import clsx from "clsx";
+import { LikeButton } from "@/components/spectrumui/like-button";
 
 const FALLBACK_CREATED_AT = "2026-09-25T12:00:00.000Z";
 
@@ -266,22 +267,14 @@ export default function WatchPage({
             <div className="flex items-center gap-2">
               {/* Like Button */}
               <div className="relative group">
-                <button
-                  onClick={handleLikeToggle}
-                  aria-label="Like video"
-                  className={clsx(
-                    "flex items-center gap-2 h-9 px-4 rounded-full border text-xs font-medium transition-colors",
-                    isLiked
-                      ? "bg-red-500/10 border-red-500/30 text-red-400"
-                      : "bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)]"
-                  )}
-                >
-                  <Heart
-                    size={16}
-                    className={clsx(isLiked ? "fill-red-400 text-red-400" : "")}
-                  />
-                  <span>{likeCount}</span>
-                </button>
+                <LikeButton
+                  liked={isLiked}
+                  count={isLiked ? Math.max(0, likeCount - 1) : likeCount}
+                  onLikedChange={handleLikeToggle}
+                  size="sm"
+                  variant="pill"
+                  className="h-9 px-3.5 text-xs"
+                />
                 {/* Local preview disclaimer tooltip (Rule 14 & 30) */}
                 <div className="absolute right-0 top-11 hidden group-hover:block z-30 w-56 p-2.5 rounded-2xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[11px] text-[var(--color-text-tertiary)] shadow-2xl leading-normal pointer-events-none">
                   ❤️ Liked. This interaction is currently local. Backend persistence coming soon.

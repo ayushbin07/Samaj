@@ -25,10 +25,12 @@ import {
   Trash2,
 } from "lucide-react";
 import ErrorState from "@/components/ui/ErrorState";
-import VideoGrid from "@/components/video/VideoGrid";
-import { SAMPLE_VIDEOS } from "@/lib/data/mockVideos";
+import { TrendingCommunity } from "@/components/ui/TrendingCommunity";
 import Link from "next/link";
 import type { Tweet } from "@/lib/types";
+import { TweetContent } from "@/components/ui/TweetContent";
+import { extractHashtags } from "@/lib/hashtags";
+import { LikeButton } from "@/components/spectrumui/like-button";
 
 function formatTime(dateStr: string) {
   const date = new Date(dateStr);
@@ -52,7 +54,7 @@ export default function ChannelPage({
   const { username } = use(params);
   const { user: currentUser, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"videos" | "community" | "about">("videos");
+  const [activeTab, setActiveTab] = useState<"tweets" | "about">("tweets");
   const [copied, setCopied] = useState(false);
 
   const {
@@ -92,12 +94,7 @@ export default function ChannelPage({
   const isOwnChannel = currentUser?.username === username;
   const tweets: Tweet[] = tweetsData?.data?.docs ?? [];
 
-  // Match sample videos that might belong to this creator or fallback to sample showcase
-  const creatorVideos = SAMPLE_VIDEOS.filter(
-    (v) =>
-      typeof v.owner === "object" &&
-      (v.owner.username === username || v.owner._id === channel?._id)
-  );
+
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -145,7 +142,7 @@ export default function ChannelPage({
           <img
             src={channel.coverImage}
             alt={`${channel.fullName} cover`}
-            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+            className="w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-zinc-900 via-neutral-900 to-black flex items-center justify-center">
@@ -167,7 +164,7 @@ export default function ChannelPage({
           <div className="relative">
             <UserAvatar
               user={channel}
-              className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 ring-4 ring-[#09090B] shadow-2xl border-2 border-[var(--color-accent)]/40 rounded-full"
+              className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 p-1.5 sm:p-2 shadow-2xl border border-[var(--color-accent)]/40 backdrop-blur-2xl bg-white/5 rounded-full"
               animate="always"
             />
           </div>
@@ -180,9 +177,6 @@ export default function ChannelPage({
               >
                 {channel.fullName}
               </h1>
-              <Chip size="sm" variant="flat" color="warning" className="text-xs font-semibold">
-                Creator
-              </Chip>
             </div>
 
             <p className="text-sm font-medium text-[var(--color-accent)]">
@@ -218,17 +212,7 @@ export default function ChannelPage({
 
           {isOwnChannel ? (
             <div className="flex items-center gap-2.5">
-              <Link href="/upload">
-                <Button
-                  size="md"
-                  color="primary"
-                  radius="full"
-                  className="font-semibold px-5 shadow-md"
-                  startContent={<Upload size={16} />}
-                >
-                  Upload Video
-                </Button>
-              </Link>
+
               <Link href="/settings">
                 <Button
                   size="md"
@@ -272,27 +256,15 @@ export default function ChannelPage({
       {/* 3. Interactive Channel Navigation Tabs */}
       <div className="bezel-shell flex items-center gap-1 overflow-x-auto scrollbar-none p-1.5">
         <button
-          onClick={() => setActiveTab("videos")}
+          onClick={() => setActiveTab("tweets")}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-            activeTab === "videos"
-              ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm font-bold"
-              : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
-          }`}
-        >
-          <VideoIcon size={16} />
-          <span>Videos</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("community")}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-            activeTab === "community"
+            activeTab === "tweets"
               ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] shadow-sm font-bold"
               : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
           }`}
         >
           <MessageSquare size={16} />
-          <span>Community</span>
+          <span>Tweets</span>
           <span className="text-xs px-2 py-0.5 rounded-full bg-black/20 font-bold">
             {tweets.length}
           </span>
@@ -313,70 +285,8 @@ export default function ChannelPage({
 
       {/* 4. Tab Contents */}
 
-      {/* TAB 1: VIDEOS */}
-      {activeTab === "videos" && (
-        <section className="space-y-8">
-          {creatorVideos.length > 0 ? (
-            <div>
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-bold text-[var(--color-text-primary)]">
-                  Uploads ({creatorVideos.length})
-                </h2>
-              </div>
-              <VideoGrid videos={creatorVideos} />
-            </div>
-          ) : (
-            <div className="space-y-10">
-              {/* Creator upload CTA if owner */}
-              {isOwnChannel ? (
-                <div className="p-8 md:p-12 rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)] text-center shadow-lg max-w-3xl mx-auto">
-                  <div className="w-16 h-16 rounded-full bg-[var(--color-accent-soft)] flex items-center justify-center mx-auto mb-4">
-                    <VideoIcon size={32} className="text-[var(--color-accent)]" />
-                  </div>
-                  <h3
-                    className="text-xl font-bold text-[var(--color-text-primary)] mb-2"
-                    style={{ fontFamily: "var(--font-display)" }}
-                  >
-                    Upload your first video
-                  </h3>
-                  <p className="text-sm text-[var(--color-text-secondary)] max-w-md mx-auto mb-6">
-                    Share your creations with the Samaj community and start building your audience today.
-                  </p>
-                  <Link href="/upload">
-                    <Button color="primary" size="lg" radius="full" className="font-semibold shadow-md" startContent={<Upload size={16} />}>
-                      Upload Video
-                    </Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="p-8 rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)] text-center max-w-2xl mx-auto">
-                  <VideoIcon size={36} className="text-[var(--color-text-tertiary)] mx-auto mb-3" />
-                  <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-1">
-                    No videos published yet
-                  </h3>
-                  <p className="text-xs text-[var(--color-text-secondary)]">
-                    {channel.fullName} hasn&apos;t published any videos yet. Check back soon!
-                  </p>
-                </div>
-              )}
-
-              {/* Showcase Featured Videos */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <TrendingUp size={18} className="text-[var(--color-accent)]" />
-                  <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
-                    Trending on Samaj
-                  </h3>
-                </div>
-                <VideoGrid videos={SAMPLE_VIDEOS.slice(0, 4)} />
-              </div>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* TAB 2: COMMUNITY (2-COLUMN WIDESCREEN DESIGN) */}
-      {activeTab === "community" && (
+      {/* TAB 1: TWEETS (2-COLUMN WIDESCREEN DESIGN) */}
+      {activeTab === "tweets" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Feed (8 columns) */}
           <div className="lg:col-span-8 space-y-5">
@@ -402,10 +312,10 @@ export default function ChannelPage({
               <div className="rounded-3xl bg-[var(--color-surface)] border border-[var(--color-border)] p-8 text-center shadow-sm">
                 <MessageSquare size={36} className="text-[var(--color-text-tertiary)] mx-auto mb-3" />
                 <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-1">
-                  No community posts yet
+                  No tweets yet
                 </h3>
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  {channel.fullName} hasn&apos;t shared any updates with the community yet.
+                  {channel.fullName} hasn&apos;t shared any tweets yet.
                 </p>
               </div>
             ) : (
@@ -455,7 +365,7 @@ export default function ChannelPage({
                           )}
                         </div>
                         <p className="text-sm text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
-                          {tweet.content}
+                          <TweetContent content={tweet.content} />
                         </p>
                         {tweet.media?.url && (
                           <div className="mt-3 mb-2 rounded-2xl overflow-hidden border border-[var(--color-border)] bg-black/20">
@@ -477,15 +387,30 @@ export default function ChannelPage({
                             )}
                           </div>
                         )}
-                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[var(--color-border)]/60 text-xs text-[var(--color-text-tertiary)]">
-                          <button className="flex items-center gap-1.5 hover:text-red-400 transition-colors">
-                            <Heart size={14} />
-                            <span>Like</span>
-                          </button>
-                          <button className="flex items-center gap-1.5 hover:text-[var(--color-accent)] transition-colors">
+                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[var(--color-border)]/60 text-xs text-[var(--color-text-tertiary)] flex-wrap">
+                          <LikeButton
+                            liked={tweet.isLiked}
+                            count={tweet.likesCount || 0}
+                            size="sm"
+                            className="shrink-0"
+                          />
+                          <button className="flex items-center gap-1.5 hover:text-[var(--color-accent)] transition-colors shrink-0">
                             <Share2 size={14} />
                             <span>Share</span>
                           </button>
+                          {extractHashtags(tweet.content).length > 0 && (
+                            <div className="flex items-center gap-1.5 flex-wrap overflow-hidden py-0.5">
+                              {extractHashtags(tweet.content).map((tag) => (
+                                <Link
+                                  key={tag}
+                                  href={`/community?tag=${encodeURIComponent(tag.replace('#', ''))}`}
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 hover:text-sky-300 border border-sky-500/20 transition-all cursor-pointer"
+                                >
+                                  {tag}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -531,6 +456,8 @@ export default function ChannelPage({
                 <li>Support creative work and discussions</li>
               </ul>
             </div>
+
+            <TrendingCommunity currentUserId={channel?._id} />
           </div>
         </div>
       )}
@@ -580,7 +507,7 @@ export default function ChannelPage({
               </div>
               <div className="flex items-center gap-2.5">
                 <MessageSquare size={15} className="text-[var(--color-accent)]" />
-                <span>{tweets.length} community posts</span>
+                <span>{tweets.length} tweets</span>
               </div>
             </div>
             <div className="pt-4 border-t border-[var(--color-border)]">

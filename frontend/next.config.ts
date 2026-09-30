@@ -39,6 +39,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/explore",
+        destination: "/community",
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     const rawBackendUrl =
       process.env.BACKEND_INTERNAL_URL ||

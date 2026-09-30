@@ -1,36 +1,48 @@
 // Service Worker for Community Progressive Web App (PWA)
-const CACHE_NAME = "community-pwa-v1";
+const CACHE_NAME = "community-pwa-v2";
 const OFFLINE_URL = "/offline.html";
 
 const PRECACHE_ASSETS = [
   OFFLINE_URL,
   "/manifest.json",
+  "/manifest.webmanifest",
   "/icons/icon-192x192.png",
   "/icons/icon-512x512.png",
   "/icons/apple-touch-icon.png",
   "/icons/favicon-32x32.png",
 ];
 
-// Install event: pre-caches critical offline assets and forces activation
+// Install event: pre-caches critical offline assets and forces immediate activation
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
-    }).then(() => self.skipWaiting())
+      return cache.addAll(PRECACHE_ASSETS).catch(() => {});
+    })
   );
 });
 
-// Activate event: claims control of all clients and purges obsolete cache versions
+// Activate event: claims control of all clients immediately and purges obsolete cache versions
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log("Purging outdated PWA cache:", name);
+            return caches.delete(name);
+          })
       );
     }).then(() => self.clients.claim())
   );
+});
+
+// Message listener to trigger skipWaiting on demand
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // Fetch event: handles offline fallback and caching strategies
@@ -49,7 +61,6 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // If valid response, clone and cache for offline viewing
           if (response && response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
@@ -57,7 +68,6 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(async () => {
-          // If offline, check cache for the requested page or serve offline.html
           const cachedResponse = await caches.match(request);
           if (cachedResponse) {
             return cachedResponse;
@@ -69,7 +79,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Strategy 2: Backend API calls (/api/) - Network Only / Network First with graceful error handling
+  // Strategy 2: Backend API calls (/api/) - Network Only
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
       fetch(request).catch(() => {
@@ -90,26 +100,25 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Strategy 3: Static Next.js chunks, images, icons, and fonts - Stale While Revalidate
+  // Strategy 3: Next.js script chunks & static assets - Network First with Cache Fallback
+  // Using Network First ensures the installed PWA gets updated JS bundles immediately
   if (
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/icons/") ||
     url.pathname.match(/\.(png|jpg|jpeg|svg|webp|woff2|woff|css|js)$/)
   ) {
     event.respondWith(
-      caches.match(request).then((cachedResponse) => {
-        const fetchPromise = fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              const responseToCache = networkResponse.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
-            }
-            return networkResponse;
-          })
-          .catch(() => cachedResponse);
-
-        return cachedResponse || fetchPromise;
-      })
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(request);
+        })
     );
     return;
   }

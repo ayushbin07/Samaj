@@ -9,6 +9,7 @@
 import React from "react";
 import { Tooltip as HTooltip } from "@heroui/react";
 import clsx from "clsx";
+import { triggerHaptic, type HapticPreset } from "@/lib/haptics";
 import { Blobatar } from "@/components/ui/blobatar";
 import "blobatar/motion.css";
 
@@ -32,6 +33,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   className?: string;
   "aria-label"?: string;
   title?: string;
+  haptic?: HapticPreset | boolean;
 }
 
 export function Button({
@@ -51,6 +53,7 @@ export function Button({
   className,
   "aria-label": ariaLabel,
   title,
+  haptic,
   ...rest
 }: ButtonProps) {
   const sizeClass = {
@@ -87,10 +90,18 @@ export function Button({
     }[variant];
   }
 
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (haptic !== false) {
+      triggerHaptic(typeof haptic === "string" ? haptic : "tap");
+    }
+    const handler = onClick ?? onPress;
+    handler?.();
+  };
+
   return (
     <button
       type={type}
-      onClick={onClick ?? onPress}
+      onClick={handleClick}
       disabled={isDisabled ?? isLoading}
       aria-label={ariaLabel}
       title={title}
@@ -249,7 +260,7 @@ export function TextArea({
       )}
       <div
         className={clsx(
-          "rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-2)] focus-within:border-[var(--color-accent)] hover:border-[var(--color-border-hover)] transition-all p-3",
+          "rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-2)] focus-within:border-[var(--color-accent)] hover:border-[var(--color-border-hover)] transition-colors p-3",
           classNames?.inputWrapper
         )}
       >

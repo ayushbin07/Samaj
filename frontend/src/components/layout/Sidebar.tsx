@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  Compass,
   Users,
   Library,
   MessageSquare,
@@ -20,10 +19,10 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import clsx from "clsx";
+import { triggerHaptic } from "@/lib/haptics";
 
 const primaryNav = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/explore", label: "Explore", icon: Compass },
   { href: "/subscriptions", label: "Subscriptions", icon: Users },
   { href: "/library", label: "Library", icon: Library },
   { href: "/community", label: "Community", icon: MessageSquare },
@@ -55,6 +54,7 @@ export default function Sidebar() {
     const inner = (
       <Link
         href={href}
+        onClick={() => triggerHaptic()}
         className={clsx(
           "flex items-center gap-3 px-3.5 py-2.5 rounded-full text-sm font-medium transition-all duration-150 group",
           isActive

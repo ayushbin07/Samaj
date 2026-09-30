@@ -18,7 +18,8 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/AuthContext"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserAvatar } from "@/components/ui/user-avatar"
-import { usePwa } from "@/components/pwa/PwaProvider"
+import { usePwa } from "@/app/pwa-provider"
+import { triggerHaptic } from "@/lib/haptics"
 
 export function AppHeader() {
   const pathname = usePathname()
@@ -31,16 +32,13 @@ export function AppHeader() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      router.push(`/explore?q=${encodeURIComponent(searchQuery.trim())}`)
+      router.push(`/community?search=${encodeURIComponent(searchQuery.trim())}`)
     }
   }
 
   const getBreadcrumbs = () => {
     if (pathname === "/") {
       return { parent: "Platform", parentHref: "/", current: "Home" }
-    }
-    if (pathname.startsWith("/explore")) {
-      return { parent: "Discover", parentHref: "/explore", current: "Explore" }
     }
     if (pathname.startsWith("/subscriptions")) {
       return { parent: "Feed", parentHref: "/subscriptions", current: "Subscriptions" }
@@ -64,18 +62,18 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-2 z-20 mx-3 mt-2 flex h-14 shrink-0 items-center justify-between gap-2 rounded-[1.2rem] bg-background/82 px-3 sm:top-3 sm:mt-3 sm:h-16 sm:px-6 sm:mx-5 lg:mx-7 lg:px-8 backdrop-blur-xl transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 shadow-[0_18px_45px_-38px_rgba(54,36,18,0.7)]">
-      <Link href="/" className="sm:hidden min-w-0 leading-none">
+      <Link href="/" onClick={() => triggerHaptic()} className="sm:hidden min-w-0 leading-none">
         <span className="block font-[var(--font-display)] text-xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">Samaj</span>
         <span className="mt-1 block text-[9px] font-medium tracking-[0.08em] text-[var(--color-text-tertiary)]">PRIVATE NETWORK</span>
       </Link>
 
       <div className="hidden sm:flex items-center gap-2">
-        <SidebarTrigger className="-ml-1" />
+        <SidebarTrigger className="-ml-1" onClick={() => triggerHaptic()} />
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href={parentHref}>
+              <BreadcrumbLink href={parentHref} onClick={() => triggerHaptic()}>
                 {parent}
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -103,7 +101,10 @@ export function AppHeader() {
         {isInstallable && !isInstalled && (
           <button
             type="button"
-            onClick={installPwa}
+            onClick={() => {
+              triggerHaptic()
+              installPwa()
+            }}
             className="h-8 px-3 rounded-md bg-[var(--color-accent)]/15 hover:bg-[var(--color-accent)] text-[var(--color-accent)] hover:text-[var(--color-accent-foreground)] border border-[var(--color-accent)]/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shrink-0"
             title="Install Community App"
           >
@@ -117,6 +118,7 @@ export function AppHeader() {
           <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/community"
+              onClick={() => triggerHaptic()}
               className="hidden sm:flex items-center justify-center size-9 rounded-lg bg-primary text-primary-foreground hover:opacity-85 active:scale-95 transition-all shrink-0"
               title="Create a post"
             >
@@ -125,6 +127,7 @@ export function AppHeader() {
 
             <Link
               href={`/channel/${user.username}`}
+              onClick={() => triggerHaptic()}
               className="flex items-center rounded-full hover:ring-2 hover:ring-[var(--color-accent)] transition-all shrink-0 p-0.5"
               title={`${user.fullName || user.username} (@${user.username})`}
             >
@@ -138,12 +141,14 @@ export function AppHeader() {
           <div className="hidden sm:flex items-center gap-2 shrink-0">
             <Link
               href="/login"
+              onClick={() => triggerHaptic()}
               className="h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold rounded-md border border-border hover:bg-muted text-foreground active:scale-95 transition-all"
             >
               Sign In
             </Link>
             <Link
               href="/register"
+              onClick={() => triggerHaptic()}
               className="h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:opacity-85 active:scale-95 transition-all"
             >
               Join

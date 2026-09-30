@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Download, X, Smartphone, Check } from "lucide-react";
+import { Download, X, Smartphone } from "lucide-react";
+import { triggerHaptic } from "@/lib/haptics";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -33,13 +34,15 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
   const [showIOSModal, setShowIOSModal] = React.useState(false);
 
   React.useEffect(() => {
-    // 1. Register Service Worker in supported browsers
+    // 1. Register Service Worker and aggressively check for updates
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker
           .register("/sw.js")
           .then((registration) => {
             console.log("PWA Service Worker registered with scope:", registration.scope);
+            // Immediately check for updated service worker & bust old caches
+            registration.update().catch(() => {});
           })
           .catch((error) => {
             console.error("PWA Service Worker registration failed:", error);
@@ -47,7 +50,17 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // 2. Detect if already running in standalone mode (installed app)
+    // 2. Global delegate for [data-haptic] elements
+    const handleGlobalHaptic = (e: MouseEvent | TouchEvent) => {
+      const target = (e.target as HTMLElement)?.closest?.("[data-haptic]") as HTMLElement | null;
+      if (target) {
+        const pattern = target.getAttribute("data-haptic") || "tap";
+        triggerHaptic(pattern);
+      }
+    };
+    document.addEventListener("click", handleGlobalHaptic, { passive: true });
+
+    // 3. Detect if already running in standalone mode (installed app / WebAPK)
     const checkStandalone = () => {
       const isStandaloneMode =
         window.matchMedia("(display-mode: standalone)").matches ||
@@ -58,12 +71,12 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
 
     checkStandalone();
 
-    // 3. Detect iOS device
+    // 4. Detect iOS device
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isAppleDevice = /iphone|ipad|ipod/.test(userAgent) && !(window as any).MSStream;
     setIsIOS(isAppleDevice);
 
-    // 4. Capture beforeinstallprompt event for Chromium / Android / Desktop
+    // 5. Capture beforeinstallprompt event for Chromium / Android / Desktop
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       const promptEvent = e as BeforeInstallPromptEvent;
@@ -77,7 +90,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // 5. Handle app installed event
+    // 6. Handle app installed event
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setIsInstallable(false);
@@ -90,12 +103,14 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
+      document.removeEventListener("click", handleGlobalHaptic);
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
   const installPwa = async () => {
+    triggerHaptic("toggle");
     if (isIOS) {
       setShowIOSModal(true);
       return;
@@ -111,6 +126,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
       if (choice.outcome === "accepted") {
         setIsInstalled(true);
         setShowBanner(false);
+        triggerHaptic("save");
       }
       setDeferredPrompt(null);
       setIsInstallable(false);
@@ -120,6 +136,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
   };
 
   const dismissBanner = () => {
+    triggerHaptic();
     setShowBanner(false);
     sessionStorage.setItem("pwa_banner_dismissed", "true");
   };
@@ -154,7 +171,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
                 </button>
               </div>
               <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 line-clamp-2 leading-relaxed">
-                Add to your home screen for quick access, offline reading, and standalone app experience.
+                Add to your home screen for instant access, offline caching, and tactile feedback.
               </p>
               <div className="mt-3 flex items-center gap-2">
                 <button
@@ -191,7 +208,10 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
               </div>
               <button
                 type="button"
-                onClick={() => setShowIOSModal(false)}
+                onClick={() => {
+                  triggerHaptic();
+                  setShowIOSModal(false);
+                }}
                 className="p-1 rounded-full text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] cursor-pointer"
               >
                 <X size={16} />
@@ -207,7 +227,10 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
             </ol>
             <button
               type="button"
-              onClick={() => setShowIOSModal(false)}
+              onClick={() => {
+                triggerHaptic();
+                setShowIOSModal(false);
+              }}
               className="w-full py-2.5 rounded-full bg-[var(--color-accent)] text-[#09090B] font-semibold text-xs hover:bg-[var(--color-accent-hover)] transition-all cursor-pointer"
             >
               Got it

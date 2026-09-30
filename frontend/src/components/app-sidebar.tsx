@@ -5,7 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   Home,
-  Compass,
   Users,
   Library,
   MessageSquare,
@@ -55,12 +54,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "/community",
         icon: MessageSquare,
         isActive: pathname.startsWith("/community"),
-      },
-      {
-        title: "Explore",
-        url: "/explore",
-        icon: Compass,
-        isActive: pathname.startsWith("/explore"),
       },
       {
         title: "Subscriptions",

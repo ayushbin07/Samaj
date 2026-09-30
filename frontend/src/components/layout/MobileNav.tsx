@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Compass, Users, MessageSquare, User as UserIcon } from "lucide-react";
+import { Home, Users, MessageSquare, User as UserIcon } from "lucide-react";
 import clsx from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { haptics } from "@/lib/haptics";
 
 export default function MobileNav() {
   const pathname = usePathname();
@@ -16,9 +17,8 @@ export default function MobileNav() {
 
   const navItems = [
     { href: "/", label: "Home", icon: Home, isActive: pathname === "/" },
-    { href: "/explore", label: "Explore", icon: Compass, isActive: pathname.startsWith("/explore") },
     { href: "/subscriptions", label: "Subs", icon: Users, isActive: pathname.startsWith("/subscriptions") },
-    { href: "/community", label: "Communities", icon: MessageSquare, isActive: pathname.startsWith("/community") },
+    { href: "/community", label: "Community", icon: MessageSquare, isActive: pathname.startsWith("/community") },
   ];
 
   return (
@@ -30,6 +30,7 @@ export default function MobileNav() {
         <Link
           key={href}
           href={href}
+          onClick={() => haptics.selection()}
           aria-current={isActive ? "page" : undefined}
           className={clsx(
             "flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[1.15rem] text-xs font-medium transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.96]",
@@ -46,6 +47,7 @@ export default function MobileNav() {
       {/* You / Profile Tab */}
       <Link
         href={youHref}
+        onClick={() => haptics.selection()}
         aria-current={isYouActive ? "page" : undefined}
         className={clsx(
           "flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[1.15rem] text-xs font-medium transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.96]",

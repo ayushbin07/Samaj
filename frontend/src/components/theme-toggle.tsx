@@ -4,6 +4,7 @@ import * as React from "react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
+import { haptics } from "@/lib/haptics"
 
 const emptySubscribe = () => () => {}
 
@@ -25,7 +26,11 @@ export function ThemeToggle({ className }: { className?: string }) {
     <Button
       variant="ghost"
       size="icon-lg"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
+      haptic="toggle"
+      onClick={() => {
+        haptics.toggle()
+        setTheme(isDark ? "light" : "dark")
+      }}
       className={`size-9 rounded-full text-foreground/80 hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all ${className ?? ""}`}
       aria-label="Toggle color theme"
       title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}

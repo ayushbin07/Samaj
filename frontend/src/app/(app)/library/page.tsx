@@ -9,7 +9,6 @@ import EmptyState from "@/components/ui/EmptyState";
 import ErrorState from "@/components/ui/ErrorState";
 import ComingSoon from "@/components/ui/ComingSoon";
 import { Spinner, Button } from "@/components/ui";
-import { SAMPLE_VIDEOS } from "@/lib/data/mockVideos";
 import Link from "next/link";
 import type { Video as VideoType } from "@/lib/types";
 
@@ -93,28 +92,13 @@ export default function LibraryPage() {
                 description="Videos you watch will show up here so you can easily find them again."
                 icon={<History size={32} className="text-[var(--color-accent)]" />}
                 action={
-                  <Link href="/explore">
+                  <Link href="/community">
                     <Button size="sm" color="primary">
-                      Explore Videos
+                      Explore Feed
                     </Button>
                   </Link>
                 }
               />
-            </div>
-
-            {/* Recommended Videos To Start Watching */}
-            <div className="pt-2 space-y-4">
-              <div className="flex items-center gap-2">
-                <Sparkles size={16} className="text-[var(--color-accent)]" />
-                <h3 className="text-base font-bold text-[var(--color-text-primary)]">
-                  Start Watching
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                {SAMPLE_VIDEOS.slice(0, 4).map((video) => (
-                  <VideoCard key={video._id} video={video} />
-                ))}
-              </div>
             </div>
           </div>
         ) : (

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
-import { PwaProvider } from "@/components/pwa/PwaProvider";
+import { PwaProvider } from "./pwa-provider";
 import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {

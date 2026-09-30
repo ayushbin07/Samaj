@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import Link from "next/link"
 import { Play } from "lucide-react"
 import { LoginForm } from "@/components/login-form"
+import { Spinner } from "@/components/ui"
 
 export default function LoginPage() {
   return (
@@ -22,7 +23,7 @@ export default function LoginPage() {
         <Suspense
           fallback={
             <div className="h-72 flex items-center justify-center">
-              <div className="size-6 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
+              <Spinner size="md" />
             </div>
           }
         >

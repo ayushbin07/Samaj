@@ -11,6 +11,7 @@ import { Tooltip as HTooltip } from "@heroui/react";
 import clsx from "clsx";
 import { triggerHaptic, type HapticPreset } from "@/lib/haptics";
 import { Blobatar } from "@/components/ui/blobatar";
+import { BlobSpinner, type BlobSpinnerProps } from "./blob-spinner";
 import "blobatar/motion.css";
 
 // ---------------------------------------------------------------------------
@@ -285,27 +286,11 @@ export function TextArea({
 }
 
 // ---------------------------------------------------------------------------
-// Spinner
 // ---------------------------------------------------------------------------
-export interface SpinnerProps {
-  size?: "sm" | "md" | "lg";
-  className?: string;
-}
-
-export function Spinner({ size = "md", className }: SpinnerProps) {
-  const sizeClass = { sm: "w-5 h-5", md: "w-8 h-8", lg: "w-12 h-12" }[size];
-  return (
-    <div
-      className={clsx(
-        "rounded-full border-2 border-[var(--color-surface-2)] border-t-[var(--color-accent)] animate-spin",
-        sizeClass,
-        className
-      )}
-      role="status"
-      aria-label="Loading"
-    />
-  );
-}
+// Spinner (User Blob in Thinking Animation)
+// ---------------------------------------------------------------------------
+export type SpinnerProps = BlobSpinnerProps;
+export { BlobSpinner, BlobSpinner as Spinner } from "./blob-spinner";
 
 // ---------------------------------------------------------------------------
 // Skeleton

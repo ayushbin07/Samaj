@@ -113,3 +113,7 @@ export function useAuth() {
   }
   return ctx;
 }
+
+export function useSafeAuth() {
+  return useContext(AuthContext);
+}
